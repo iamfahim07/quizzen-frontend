@@ -4,7 +4,9 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 import type { Option, Quiz } from "@/types";
 
-const KEY = import.meta.env.VITE_PARENT_STORAGE_KEY;
+import { PARENT_STORAGE_KEY } from "@/config";
+
+const KEY = PARENT_STORAGE_KEY;
 
 interface ChatBody {
   role: "ai" | "user";

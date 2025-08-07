@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowUp, Paperclip } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { useGenerateAiQuizzes } from "@/api/use-generate-ai-quizzes";
 
@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAIQuizModal } from "@/hooks/use-ai-quiz-modal";
 import { useAppStore } from "@/hooks/use-app-store";
 import { useProgressStore } from "@/hooks/use-progress-store";
+
+import { cn } from "@/lib/utils";
 
 interface PromptInputProps {
   conversationIdProp?: string | null;
@@ -26,6 +28,10 @@ export default function PromptInput({
   const [prompt, setPrompt] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   //   const [selectedMode, setSelectedMode] = useState("ask");
+
+  const isDisabled = !prompt.trim() && files.length === 0;
+
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const conversationId = useMemo(
     () =>
@@ -130,27 +136,26 @@ export default function PromptInput({
         )}
 
         <div className="flex items-center justify-end gap-3 px-4 pb-2 bg-white">
-          <div className="relative hover:cursor-pointer group/file_icon">
+          <div className="">
             {/* File upload */}
             <input
+              ref={inputRef}
               type="file"
               name="quiz_files"
               id="quiz_files"
               multiple
               accept="image/*,.pdf,.txt"
               onChange={handleFileChange}
-              className="absolute inset-0 w-full h-full opacity-0 group-hover/file_icon:!cursor-pointer"
+              className="hidden -z-50"
             />
-            <label
-              htmlFor="quiz_files"
-              className="group-hover/file_icon:!cursor-pointer"
-            >
+            <label htmlFor="quiz_files" className="">
               <Button
                 type="button"
                 variant="ghost"
-                className="w-8 h-8 text-gray-500 group-hover/file_icon:text-gray-700 group-hover/file_icon:bg-gray-100 group-hover/file_icon:!cursor-pointer"
+                className="w-8 h-8 text-gray-500 hover:text-gray-700 hover:bg-gray-100 cursor-pointer"
+                onClick={() => inputRef.current?.click()}
               >
-                <Paperclip className="!size-5 group-hover/file_icon:!cursor-pointer" />
+                <Paperclip className="!size-5" />
               </Button>
             </label>
           </div>
@@ -161,8 +166,10 @@ export default function PromptInput({
               handleSubmit();
               open();
             }}
-            disabled={!prompt.trim() && files.length === 0}
-            className="h-8 w-8 bg-gray-800 hover:bg-gray-900 disabled:bg-gray-300 rounded-full p-0"
+            disabled={isDisabled}
+            className={cn(
+              "h-8 w-8 bg-gray-800 hover:bg-gray-900 disabled:bg-gray-300 rounded-full p-0 cursor-pointer"
+            )}
             size="icon"
           >
             <ArrowUp className="text-white !size-5" />

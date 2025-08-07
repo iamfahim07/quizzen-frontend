@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, LogIn } from "lucide-react";
 
 import { SpinnerLoader } from "@/components/loader";
 import { Button } from "@/components/ui/button";
@@ -63,9 +63,10 @@ export default function Header({
         {!user && !isLoading && (
           <Button
             variant="outline"
-            className="flex items-center space-x-2 cursor-pointer"
+            className="flex justify-center items-center space-x-2 cursor-pointer"
             onClick={() => navigate({ to: "/auth" })}
           >
+            <LogIn className="w-4 h-4 sm:hidden" />
             <span className="hidden sm:inline">Login</span>
           </Button>
         )}
