@@ -26,8 +26,8 @@ export default function HomePage() {
   } = useGetTopics();
 
   return (
-    <div className="min-h-screen pb-16 fade-in">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main className="min-h-screen px-4 sm:px-6 lg:px-8 pb-16 fade-in">
+      <section className="max-w-7xl mx-auto py-8">
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-violet-500 to-blue-600 bg-clip-text text-transparent mb-2">
             Welcome{user && " back"}, {user?.fullName?.split(" ")[0] || "Guest"}
@@ -43,9 +43,9 @@ export default function HomePage() {
         </div>
 
         <PromptInput />
-      </main>
+      </section>
 
-      <div className="max-w-7xl mx-auto mb-10">
+      <section className="max-w-7xl mx-auto mb-10">
         {allAIQuizData.length > 0 && (
           <h1 className="w-full text-2xl font-semibold text-gray-900 mb-4">
             Recently AI Generated Quizzes
@@ -66,9 +66,9 @@ export default function HomePage() {
             </Link>
           ))}
         </div>
-      </div>
+      </section>
 
-      <div className="max-w-7xl mx-auto">
+      <section className="max-w-7xl mx-auto">
         <h1 className="w-full text-2xl font-semibold text-gray-900 mb-4">
           Curated Quizzes
         </h1>
@@ -93,7 +93,7 @@ export default function HomePage() {
             ))}
           </div>
         )}
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

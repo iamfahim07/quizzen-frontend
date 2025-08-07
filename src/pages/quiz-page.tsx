@@ -238,7 +238,7 @@ export default function QuizPage() {
               <Toggle
                 key={option?._id}
                 className={cn(
-                  "w-full bg-white border border-white/50 shadow py-6 px-6 justify-start cursor-pointer data-[state=on]:text-white data-[state=on]:bg-green-500",
+                  "w-full h-auto whitespace-normal break-words bg-white border border-white/50 shadow py-[14px] px-6 justify-start cursor-pointer data-[state=on]:text-white data-[state=on]:bg-green-500",
                   timeLeft === 0 && "cursor-not-allowed opacity-40"
                 )}
                 pressed={

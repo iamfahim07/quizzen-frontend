@@ -113,7 +113,7 @@ export default function TopicForm({
             id="topic_image"
             accept="image/*"
             onChange={handleFileChange}
-            className="w-full absolute left-0 opacity-0 -z-50 pointer-events-none"
+            className="hidden -z-50"
             required={!topic}
             disabled={isPending}
           />

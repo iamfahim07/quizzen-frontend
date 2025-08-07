@@ -1,3 +1,5 @@
+import { SERVER_BASE_URL } from "@/config";
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
@@ -12,7 +14,7 @@ export async function apiRequest<T = unknown>(
 ): Promise<Response> {
   const isForm = data instanceof FormData;
 
-  const res = await fetch(`${import.meta.env.VITE_SERVER_BASE_URL}${url}`, {
+  const res = await fetch(`${SERVER_BASE_URL}${url}`, {
     method,
     headers:
       isForm || !data ? undefined : { "Content-Type": "application/json" },

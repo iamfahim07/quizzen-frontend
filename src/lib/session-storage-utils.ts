@@ -1,4 +1,6 @@
-const KEY = import.meta.env.VITE_PARENT_STORAGE_KEY;
+import { PARENT_STORAGE_KEY } from "@/config";
+
+const KEY = PARENT_STORAGE_KEY;
 
 function _getArr() {
   try {

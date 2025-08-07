@@ -17,6 +17,8 @@ import { useAppStore } from "@/hooks/use-app-store";
 
 import { cn, secondsToMinutes } from "@/lib/utils";
 
+import { SCORE_PER_QUIZ, TIME_LIMIT_PER_QUIZ } from "@/config";
+
 export default function AnalysisPage() {
   const { topic_name, topic_id } = useParams({ strict: false });
   const { source } = useSearch({ from: "/analysis/$topic_name/$topic_id" });
@@ -56,8 +58,7 @@ export default function AnalysisPage() {
               <p className="text-gray-600">
                 {submittedQuizData.length} questions •{" "}
                 {secondsToMinutes(
-                  submittedQuizData.length *
-                    import.meta.env.VITE_TIME_LIMIT_PER_QUIZ
+                  submittedQuizData.length * TIME_LIMIT_PER_QUIZ
                 )}{" "}
                 minutes
               </p>
@@ -71,9 +72,7 @@ export default function AnalysisPage() {
                 {userStats.score}
               </p>
               <p className="text-sm text-gray-600">
-                out of{" "}
-                {submittedQuizData.length * import.meta.env.VITE_SCORE_PER_QUIZ}{" "}
-                points
+                out of {submittedQuizData.length * SCORE_PER_QUIZ} points
               </p>
             </div>
 
@@ -98,8 +97,7 @@ export default function AnalysisPage() {
               <p className="text-sm text-gray-600">
                 of{" "}
                 {secondsToMinutes(
-                  submittedQuizData.length *
-                    import.meta.env.VITE_TIME_LIMIT_PER_QUIZ
+                  submittedQuizData.length * TIME_LIMIT_PER_QUIZ
                 )}{" "}
                 minutes
               </p>
@@ -110,11 +108,11 @@ export default function AnalysisPage() {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Performance Breakdown
             </h3>
-            <div style={{ width: "100%", height: 250 }}>
+            <div className="w-full h-[250px]">
               <ResponsiveContainer>
                 <BarChart
                   data={chartData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  margin={{ top: 20, right: 30, left: -20, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />

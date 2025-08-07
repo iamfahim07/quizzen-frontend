@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 
 import { useAppStore } from "@/hooks/use-app-store";
 
+import { SCORE_PER_QUIZ, TIME_LIMIT_PER_QUIZ } from "@/config";
+
 export default function RulesPage() {
   const { topic_name, topic_id } = useParams({ strict: false });
   const { source } = useSearch({ from: "/rules/$topic_name/$topic_id" });
@@ -39,13 +41,13 @@ export default function RulesPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="flex items-center mb-4">
-            <BrainCircuit className="h-10 w-10 text-blue-600 mr-4" />
+            <BrainCircuit className="max-md:hidden h-10 w-10 text-blue-600 flex-shrink-0 mr-4" />
             <div>
               <h2 className="text-2xl font-bold text-gray-900">{topic_name}</h2>
               <p className="text-gray-600">
                 {isLoading && "Counting..."} {!isLoading && error && "Error..."}{" "}
                 {!isLoading && !error && `${quizzes?.length} questions`} •{" "}
-                {import.meta.env.VITE_TIME_LIMIT_PER_QUIZ} Seconds per question
+                {TIME_LIMIT_PER_QUIZ} Seconds per question
               </p>
             </div>
           </div>
@@ -69,9 +71,8 @@ export default function RulesPage() {
                   Time Limit
                 </h4>
                 <p className="text-sm text-gray-600">
-                  You have {import.meta.env.VITE_TIME_LIMIT_PER_QUIZ} Seconds
-                  per question to complete the quiz. The timer starts when you
-                  begin the quiz.
+                  You have {TIME_LIMIT_PER_QUIZ} Seconds per question to
+                  complete the quiz. The timer starts when you begin the quiz.
                 </p>
               </div>
             </li>
@@ -85,9 +86,8 @@ export default function RulesPage() {
                   Scoring System
                 </h4>
                 <p className="text-sm text-gray-600">
-                  Each correct answer is worth{" "}
-                  {import.meta.env.VITE_SCORE_PER_QUIZ} points. There's no
-                  penalty for incorrect answers. A score of 70% or higher is
+                  Each correct answer is worth {SCORE_PER_QUIZ} points. There's
+                  no penalty for incorrect answers. A score of 70% or higher is
                   regarded as a good result.
                 </p>
               </div>
@@ -143,8 +143,8 @@ export default function RulesPage() {
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-          <div className="flex items-center">
-            <Lightbulb className="text-yellow-500 h-5 w-5 mr-3" />
+          <div className="flex items-start">
+            <Lightbulb className="text-yellow-500 h-5 w-5 flex-shrink-0 mr-3" />
             <p className="text-sm text-gray-700">
               <span className="font-medium">Tip:</span> Read each question
               carefully before selecting an answer. Some questions may have

@@ -8,6 +8,8 @@ import Header from "@/components/header";
 import { Toaster } from "@/components/ui/sonner";
 
 import { InitializeAuthStore } from "@/hooks/use-auth-store";
+
+import { GOOGLE_CLIENT_ID } from "@/config";
 import "../App.css";
 
 const searchSchema = z.object({
@@ -23,9 +25,7 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     <div className="bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100">
-      <GoogleOAuthProvider
-        clientId={`${import.meta.env.VITE_GOOGLE_CLIENT_ID}`}
-      >
+      <GoogleOAuthProvider clientId={`${GOOGLE_CLIENT_ID}`}>
         <NuqsAdapter>
           <InitializeAuthStore />
           <Header title="QuizZen" showProfile />
