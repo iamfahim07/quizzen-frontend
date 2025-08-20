@@ -37,7 +37,6 @@ export const ResponsiveModal = ({
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="data-[vaul-drawer-direction=bottom]:max-h-[95vh]">
-        {/* <div className="overflow-hidden max-h-[95vh]">{children}</div> */}
         {children}
       </DrawerContent>
     </Drawer>

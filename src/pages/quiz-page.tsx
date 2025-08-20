@@ -12,14 +12,24 @@ import { QuizSkeletonLoader } from "@/components/skeleton-loaders";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 
-import { useAppStore } from "@/hooks/use-app-store";
+import { useAiQuizStore } from "@/hooks/use-ai-quiz-store";
+import { useAnalysisStore } from "@/hooks/use-analysis-store";
 import { useTimer } from "@/hooks/use-timer";
 
-import { cn, shuffleArrayElement } from "@/lib/utils";
+import { cn, makeDragImage, shuffleArrayElement } from "@/lib/utils";
 
 import { SCORE_PER_QUIZ } from "@/config";
 
 import type { Option, Quiz } from "@/types";
+
+interface TouchMoveState {
+  x: number;
+  y: number;
+}
+
+interface TouchStartState extends TouchMoveState {
+  index: number;
+}
 
 export default function QuizPage() {
   const { topic_name, topic_id } = useParams({ strict: false });
@@ -43,11 +53,15 @@ export default function QuizPage() {
     })[]
   >([]);
   const [userStats, setUserStats] = useState({ timeTaken: 0, score: 0 });
+  // state variables for touch events
+  const [touchStart, setTouchStart] = useState<TouchStartState | null>(null);
+  const [touchMove, setTouchMove] = useState<TouchMoveState | null>(null);
 
   const dragAnswer = useRef(0);
   const dragOverAnswer = useRef(0);
 
-  const { aiQuizDataById, setUserAnalysisResultById } = useAppStore();
+  const { setUserAnalysisResultById } = useAnalysisStore();
+  const { aiQuizDataById } = useAiQuizStore();
 
   const {
     isLoading,
@@ -189,6 +203,64 @@ export default function QuizPage() {
     }
   };
 
+  // Touch event handlers
+  const handleTouchStart = (
+    e: React.TouchEvent,
+    index: number,
+    optionId: string
+  ) => {
+    if (timeLeft > 0 && currentQuiz?.isSortQuiz) {
+      dragAnswer.current = index;
+      setIsDragging({
+        status: true,
+        draggingElementId: optionId ?? "",
+      });
+
+      const touch = e.touches[0];
+      setTouchStart({
+        x: touch.clientX,
+        y: touch.clientY,
+        index: index,
+      });
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStart) return;
+
+    const touch = e.touches[0];
+    setTouchMove({
+      x: touch.clientX,
+      y: touch.clientY,
+    });
+
+    const elementBelow = document.elementFromPoint(
+      touch.clientX,
+      touch.clientY
+    );
+    const dropTarget = elementBelow?.closest("[data-drop-target]");
+
+    if (dropTarget) {
+      const targetIndex = parseInt(
+        dropTarget.getAttribute("data-index") ?? "0"
+      );
+      dragOverAnswer.current = targetIndex;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStart && touchMove) {
+      handleSort();
+    }
+
+    setTouchStart(null);
+    setTouchMove(null);
+    setIsDragging({
+      status: false,
+      draggingElementId: null,
+    });
+  };
+
   useEffect(() => {
     if (!currentQuiz?.options?.length) return;
 
@@ -252,22 +324,39 @@ export default function QuizPage() {
                     ? undefined
                     : () => toggleClick(option)
                 }
+                // Add data attributes for touch handling
+                data-drop-target={currentQuiz?.isSortQuiz ? "true" : undefined}
+                data-index={index}
                 draggable={
                   timeLeft > 0 && currentQuiz?.isSortQuiz ? true : false
                 }
-                onDragStart={() => {
+                onDragStart={(e) => {
                   dragAnswer.current = index;
                   setIsDragging({
                     status: true,
                     draggingElementId: option?._id ?? "",
                   });
+
+                  const dragImg = makeDragImage(option?.value ?? "");
+
+                  e.dataTransfer.setDragImage(dragImg, 10, 10);
+
+                  requestAnimationFrame(() => {
+                    setTimeout(() => {
+                      if (dragImg && dragImg.parentNode)
+                        dragImg.parentNode.removeChild(dragImg);
+                    }, 0);
+                  });
                 }}
                 onDrag={() => (dragAnswer.current = index)}
-                onDragEnter={() => {
+                // onDragEnter={() => {
+                //   dragOverAnswer.current = index;
+                //   handleSort();
+                // }}
+                onDrop={() => {
                   dragOverAnswer.current = index;
                   handleSort();
                 }}
-                // onDrop={() => handleSort()}
                 onDragOver={(e) => e.preventDefault()}
                 onDragEnd={() => {
                   setIsDragging({
@@ -275,14 +364,18 @@ export default function QuizPage() {
                     draggingElementId: null,
                   });
                 }}
+                // Touch events (for mobile)
+                onTouchStart={(e) => handleTouchStart(e, index, option._id!)}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
               >
                 <p
                   className={cn(
                     "w-full text-start",
                     isDragging.status &&
                       isDragging.draggingElementId === option?._id
-                      ? "opacity-40"
-                      : "opacity-100"
+                      ? "invisible"
+                      : "visible"
                   )}
                 >
                   {option?.value}

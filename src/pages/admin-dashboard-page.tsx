@@ -217,7 +217,7 @@ export default function AdminDashboardPage() {
                       setEditingTopic(null);
                       setIsTopicDialogOpen(true);
                     }}
-                    className="flex items-center gap-2 bg-violet-600 hover:bg-violet-500"
+                    className="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 cursor-pointer"
                   >
                     <Plus size={16} />
                     Add Topic
@@ -297,7 +297,7 @@ export default function AdminDashboardPage() {
                       setEditingQuiz(null);
                       setIsQuizDialogOpen(true);
                     }}
-                    className="flex items-center gap-2 bg-violet-600 hover:bg-violet-500"
+                    className="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 cursor-pointer"
                   >
                     <Plus size={16} />
                     Add Quiz

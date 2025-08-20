@@ -51,6 +51,8 @@ export type ButtonType =
 
 export type QuestionType = "multiple-choice" | "sortable";
 
+export type Difficulty = "easy" | "medium" | "hard" | "extreme";
+
 // export interface Question {
 //   id: string;
 //   quizId: string;

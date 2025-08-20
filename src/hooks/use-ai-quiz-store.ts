@@ -2,11 +2,9 @@ import type { StateCreator } from "zustand";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import type { Option, Quiz } from "@/types";
+import type { Quiz } from "@/types";
 
-import { PARENT_STORAGE_KEY } from "@/config";
-
-const KEY = PARENT_STORAGE_KEY;
+import { AI_CHAT_KEY, AI_QUIZ_KEY } from "@/config";
 
 interface ChatBody {
   role: "ai" | "user";
@@ -28,6 +26,7 @@ export interface QuizDataBody {
   isSuccess: boolean;
   isError: boolean;
   topic?: string;
+  description?: string;
   quizzes?: Quiz[];
 }
 
@@ -37,25 +36,6 @@ interface QuizSliceState {
   setAIQuizDataById: (data: QuizDataBody) => void;
   removeAIQuizDataById: (conversationId: string) => void;
   clearAIQuizData: () => void;
-}
-
-interface AnalysisBody {
-  submittedQuizData: (Quiz & {
-    isCorrect: boolean;
-    selectedOptions: Option[];
-  })[];
-  userStats: {
-    timeTaken: number;
-    score: number;
-  };
-}
-
-interface AnalysisSliceState {
-  userAnalysisResults: Record<string, AnalysisBody>;
-  getUserAnalysisResultById: (id: string) => AnalysisBody;
-  setUserAnalysisResultById: (id: string, dataObj: AnalysisBody) => void;
-  removeUserAnalysisResultById: (id: string) => void;
-  clearUserAnalysisResults: () => void;
 }
 
 // Slice for chat history
@@ -119,41 +99,20 @@ const createQuizSlice: StateCreator<QuizSliceState> = (set, get) => ({
   clearAIQuizData: () => set({ allAIQuizData: [] }),
 });
 
-// Slice for analysis data
-const createAnalysisSlice: StateCreator<AnalysisSliceState> = (set, get) => ({
-  userAnalysisResults: {},
-  getUserAnalysisResultById: (id) => get().userAnalysisResults[id] || {},
-
-  setUserAnalysisResultById: (id, dataObj) =>
-    set((state) => ({
-      userAnalysisResults: {
-        ...state.userAnalysisResults,
-        [id]: dataObj,
-      },
-    })),
-
-  removeUserAnalysisResultById: (id) => {
-    set((state) => {
-      const cloneUserAnalysisResults = { ...state.userAnalysisResults };
-      delete cloneUserAnalysisResults[id];
-
-      return { userAnalysisResults: cloneUserAnalysisResults };
-    });
-  },
-
-  clearUserAnalysisResults: () => set({ userAnalysisResults: {} }),
-});
-
-// Combine all slices into one store
-export const useAppStore = create<
-  ChatSliceState & QuizSliceState & AnalysisSliceState
->()(
+export const useAiChatStore = create<ChatSliceState>()(
   persist(
     (...a) => ({
       ...createChatSlice(...a),
-      ...createQuizSlice(...a),
-      ...createAnalysisSlice(...a),
     }),
-    { name: KEY, storage: createJSONStorage(() => sessionStorage) }
+    { name: AI_CHAT_KEY, storage: createJSONStorage(() => sessionStorage) }
+  )
+);
+
+export const useAiQuizStore = create<QuizSliceState>()(
+  persist(
+    (...a) => ({
+      ...createQuizSlice(...a),
+    }),
+    { name: AI_QUIZ_KEY, storage: createJSONStorage(() => localStorage) }
   )
 );

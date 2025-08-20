@@ -1,5 +1,35 @@
+@font-face {
+  font-family: "Inter";
+  src: url("./assets/fonts/inter/InterVariable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Caveat";
+  src: url("./assets/fonts/caveat/CaveatVariable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* @font-face {
+  font-family: "Caveat";
+  src: url("./assets/fonts/caveat/Caveat-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+} */
+
+/* @font-face {
+  font-family: "Caveat";
+  src: url("./assets/fonts/caveat/Caveat-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+} */
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
