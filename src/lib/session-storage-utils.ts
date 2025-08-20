@@ -1,6 +1,6 @@
-import { PARENT_STORAGE_KEY } from "@/config";
+import { AI_CHAT_KEY } from "@/config";
 
-const KEY = PARENT_STORAGE_KEY;
+const KEY = AI_CHAT_KEY;
 
 function _getArr() {
   try {
