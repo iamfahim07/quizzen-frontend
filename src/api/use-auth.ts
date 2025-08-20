@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { apiRequest } from "@/api/api-client";
 
@@ -34,6 +35,12 @@ export const useAuth = () => {
 
       return await response.json();
     },
+    onSuccess: () => {
+      toast.success("Login Successfull");
+    },
+    onError: () => {
+      toast.error("Invalid credentials!");
+    },
   });
 
   const getUser = useQuery<GetUserResponse, Error>({
@@ -64,6 +71,12 @@ export const useAuth = () => {
 
       return await response.json();
     },
+    onSuccess: () => {
+      toast.success("Signup Successfull");
+    },
+    onError: () => {
+      toast.error("Failed to Signup!");
+    },
   });
 
   const googleAuthMutation = useMutation<
@@ -81,6 +94,12 @@ export const useAuth = () => {
       );
 
       return await response.json();
+    },
+    onSuccess: () => {
+      toast.success("Google Auth Successfull");
+    },
+    onError: () => {
+      toast.error("Google Auth Failed!");
     },
   });
 

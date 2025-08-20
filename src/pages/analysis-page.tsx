@@ -13,7 +13,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 
-import { useAppStore } from "@/hooks/use-app-store";
+import { useAnalysisStore } from "@/hooks/use-analysis-store";
 
 import { cn, secondsToMinutes } from "@/lib/utils";
 
@@ -23,7 +23,7 @@ export default function AnalysisPage() {
   const { topic_name, topic_id } = useParams({ strict: false });
   const { source } = useSearch({ from: "/analysis/$topic_name/$topic_id" });
 
-  const { getUserAnalysisResultById } = useAppStore();
+  const { getUserAnalysisResultById } = useAnalysisStore();
   const { userStats, submittedQuizData } = getUserAnalysisResultById(
     topic_id ?? ""
   );
@@ -58,7 +58,7 @@ export default function AnalysisPage() {
               <p className="text-gray-600">
                 {submittedQuizData.length} questions •{" "}
                 {secondsToMinutes(
-                  submittedQuizData.length * TIME_LIMIT_PER_QUIZ
+                  submittedQuizData.length * Number(TIME_LIMIT_PER_QUIZ)
                 )}{" "}
                 minutes
               </p>
@@ -72,7 +72,8 @@ export default function AnalysisPage() {
                 {userStats.score}
               </p>
               <p className="text-sm text-gray-600">
-                out of {submittedQuizData.length * SCORE_PER_QUIZ} points
+                out of {submittedQuizData.length * Number(SCORE_PER_QUIZ)}{" "}
+                points
               </p>
             </div>
 
@@ -97,7 +98,7 @@ export default function AnalysisPage() {
               <p className="text-sm text-gray-600">
                 of{" "}
                 {secondsToMinutes(
-                  submittedQuizData.length * TIME_LIMIT_PER_QUIZ
+                  submittedQuizData.length * Number(TIME_LIMIT_PER_QUIZ)
                 )}{" "}
                 minutes
               </p>

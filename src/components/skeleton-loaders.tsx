@@ -1,9 +1,9 @@
 export const TopicsCardSkeletonLoader = () => {
   return (
     <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div className="w-full h-40 bg-gray-300 rounded-xl animate-pulse"></div>
-      <div className="w-full h-40 bg-gray-300 rounded-xl animate-pulse"></div>
-      <div className="w-full h-40 bg-gray-300 rounded-xl animate-pulse"></div>
+      <div className="w-full h-56 bg-gray-300 rounded-xl animate-pulse"></div>
+      <div className="w-full h-56 bg-gray-300 rounded-xl animate-pulse"></div>
+      <div className="w-full h-56 bg-gray-300 rounded-xl animate-pulse"></div>
     </div>
   );
 };

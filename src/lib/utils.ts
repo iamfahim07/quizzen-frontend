@@ -37,3 +37,22 @@ export function generateUniqueId(prefix = "") {
   const extraRandom = Math.random().toString(36).substring(2, 5);
   return `${prefix}${timestamp}-${randomStr}${extraRandom}`;
 }
+
+export function makeDragImage(text: string) {
+  const el = document.createElement("div");
+  el.style.position = "absolute";
+  el.style.left = "-9999px";
+  el.style.top = "-9999px";
+  el.style.padding = "10px 20px";
+  // el.style.font = "14px system-ui, -apple-system, 'Segoe UI', Roboto";
+  el.style.fontSize = "14px";
+  el.style.fontWeight = "500";
+  el.style.background = "white";
+  el.style.border = "1px solid oklch(44.6% 0.03 256.802)";
+  el.style.borderRadius = "6px";
+  el.style.boxShadow = "0 6px 18px rgba(0,0,0,0.12)";
+  el.style.zIndex = "99999";
+  el.textContent = text;
+  document.body.appendChild(el);
+  return el;
+}

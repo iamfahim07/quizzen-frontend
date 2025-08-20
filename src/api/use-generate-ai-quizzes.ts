@@ -3,13 +3,14 @@ import { toast } from "sonner";
 
 import { apiRequest } from "@/api/api-client";
 
-import { useAppStore } from "@/hooks/use-app-store";
+import { useAiChatStore, useAiQuizStore } from "@/hooks/use-ai-quiz-store";
 import { useProgressStore } from "@/hooks/use-progress-store";
 
-import type { Quiz } from "@/types";
+import type { Difficulty, Quiz } from "@/types";
 
 interface GenerateAiQuizzesInput {
   prompt: string;
+  difficulty: Difficulty;
   conversationId: string;
   modifyExisting: boolean;
   files: File[];
@@ -20,13 +21,15 @@ interface GenerateAiQuizzesResponse {
     conversationId: string;
     message: string;
     topic: string;
+    description: string;
     quizData: Quiz[];
   };
 }
 
 export const useGenerateAiQuizzes = () => {
   const { setProgress } = useProgressStore();
-  const { setChatHistoryById, setAIQuizDataById } = useAppStore();
+  const { setChatHistoryById } = useAiChatStore();
+  const { setAIQuizDataById } = useAiQuizStore();
 
   const mutation = useMutation<
     GenerateAiQuizzesResponse,
@@ -35,12 +38,14 @@ export const useGenerateAiQuizzes = () => {
   >({
     mutationFn: async ({
       prompt,
+      difficulty,
       conversationId,
       modifyExisting,
       files,
     }: GenerateAiQuizzesInput): Promise<GenerateAiQuizzesResponse> => {
       const formData = new FormData();
       formData.append("prompt", prompt);
+      formData.append("difficulty", difficulty);
       formData.append("conversationId", conversationId);
       formData.append("modifyExisting", modifyExisting.toString());
 
@@ -55,7 +60,7 @@ export const useGenerateAiQuizzes = () => {
       return await response.json();
     },
     onSuccess: async ({ data }) => {
-      const { conversationId, topic, quizData, message } = data;
+      const { conversationId, topic, description, quizData, message } = data;
 
       await setProgress(100);
 
@@ -67,6 +72,7 @@ export const useGenerateAiQuizzes = () => {
         isSuccess: true,
         isError: false,
         topic: topic,
+        description: description,
         quizzes: quizData,
       });
 

@@ -7,7 +7,6 @@ export const useSignupQueryState = () => {
   );
 
   const open = () => {
-    console.log("clicked on");
     setIsOpen(true);
   };
   const close = () => setIsOpen(false);

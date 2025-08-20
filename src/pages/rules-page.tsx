@@ -13,7 +13,7 @@ import { useGetQuizzes } from "@/api/use-get-quizzes";
 
 import { Button } from "@/components/ui/button";
 
-import { useAppStore } from "@/hooks/use-app-store";
+import { useAiQuizStore } from "@/hooks/use-ai-quiz-store";
 
 import { SCORE_PER_QUIZ, TIME_LIMIT_PER_QUIZ } from "@/config";
 
@@ -21,7 +21,7 @@ export default function RulesPage() {
   const { topic_name, topic_id } = useParams({ strict: false });
   const { source } = useSearch({ from: "/rules/$topic_name/$topic_id" });
 
-  const { aiQuizDataById } = useAppStore();
+  const { aiQuizDataById } = useAiQuizStore();
   const aiQuizData = aiQuizDataById(topic_id!);
 
   const isAIQuizData =

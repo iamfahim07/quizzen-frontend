@@ -3,7 +3,10 @@ import { Edit, Trash2 } from "lucide-react";
 import { useDeleteQuiz } from "@/api/admin/use-delete-quiz";
 import { useGetQuizzes } from "@/api/use-get-quizzes";
 
-import { ErrorComponent } from "@/components/fallback-component";
+import {
+  EmptyStateComponent,
+  ErrorComponent,
+} from "@/components/fallback-component";
 import { SpinnerLoader } from "@/components/loader";
 import { Button } from "@/components/ui/button";
 
@@ -49,6 +52,8 @@ export const QuizzesList = ({
   };
 
   if (isPending) return <SpinnerLoader />;
+
+  if (filteredQuizzes.length === 0) return <EmptyStateComponent />;
 
   if (error) return <ErrorComponent onRetry={refetch} isLoading={isPending} />;
 

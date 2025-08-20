@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { useAiQuizStore } from "@/hooks/use-ai-quiz-store";
 import { useConfirm } from "@/hooks/use-confirm";
 
 import { cn } from "@/lib/utils";
@@ -21,13 +20,8 @@ const topicCoverImages = {
 };
 
 interface TopicCardProps {
-  topic: TopicResponse & {
-    conversationId?: string;
-    topic?: string;
-    quizzes?: Quiz[];
-  };
-  source: "db" | "ai";
-  onTopicCardClick?: () => void;
+  topic: TopicResponse & { topic?: string; quizzes?: Quiz[] };
+  source: string;
   admin?: boolean;
   onQuizAddClick?: () => void;
   onUpdateClick?: () => void;
@@ -37,14 +31,11 @@ export default function TopicCard({
   topic,
   source,
   admin,
-  onTopicCardClick,
   onQuizAddClick,
   onUpdateClick,
 }: TopicCardProps) {
   const { isLoading, data: { data: fetchedQuizzes } = { data: [] } } =
     useGetQuizzes(topic._id!, source);
-
-  const isAiGenerated = source === "ai";
 
   const title = topic.title || topic.topic || "";
 
@@ -53,27 +44,15 @@ export default function TopicCard({
     "This action cannot be undone.",
     "destructive"
   );
-  const { removeAIQuizDataById } = useAiQuizStore();
 
   const mutation = useDeleteTopic(title);
 
-  const handleDeleteTopic = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-
+  const handleDeleteTopic = async () => {
     const ok = await confirmDeleteTopic();
     if (!ok) return;
 
-    const idToDelete = isAiGenerated ? topic?.conversationId : topic._id;
-
-    if (!idToDelete) return;
-
-    if (isAiGenerated) {
-      removeAIQuizDataById(idToDelete);
-    } else if (admin) {
-      mutation.mutate({ topicId: idToDelete });
-    }
-
-    // mutation.mutate({ topicId: topic._id! });
+    if (!topic._id) return;
+    mutation.mutate({ topicId: topic._id });
   };
 
   const quizLength =
@@ -85,73 +64,71 @@ export default function TopicCard({
     <>
       <DeleteTopicDialog />
 
-      <Card
-        className="group flex flex-col justify-between cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 overflow-hidden bg-white rounded-[8px] border-0 shadow-lg p-0 h-full gap-0"
-        onClick={onTopicCardClick}
-      >
-        <CardContent className="p-4 m-0 space-y-3">
-          <div className="rounded-md overflow-hidden">
+      <Card className="group cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden bg-white rounded-2xl border-0 shadow-lg p-0 h-full gap-0">
+        <CardContent className="p-0 m-0">
+          <div className="relative h-48 overflow-hidden">
             <img
               src={topic.img_link || topicCoverImages.fallBackImage}
               alt={topic.img_ref || "topic image"}
               className={cn(
-                "w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105",
+                "w-full h-full object-cover transition-transform duration-300 group-hover:scale-110",
                 source === "ai" && "object-[50%_75%]"
               )}
             />
-          </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-          <div className="text-[#111827] text-xl font-bold">
-            <h3>{topic.title || topic.topic}</h3>
-          </div>
+            <div className="absolute bottom-4 left-4 right-4">
+              <h3 className="text-white text-shadow-xs text-shadow-black text-xl font-bold mb-1">
+                {topic.title || topic.topic}
+              </h3>
 
-          <div className="text-[#4B5563] text-sm leading-relaxed">
-            <p>{topic.description}</p>
+              <Badge variant="secondary" className="mt-1">
+                {isLoading
+                  ? "Loading..."
+                  : `${quizLength} ${quizLength <= 1 ? "quiz" : "quizzes"}`}
+              </Badge>
+
+              {topic.description && (
+                <div>
+                  <p className="text-white/90 text-sm leading-relaxed">
+                    {topic.description}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </CardContent>
 
-        <CardContent className="px-4 pb-4 flex justify-between items-center">
-          <Badge variant="secondary" className="bg-[#26C08C] text-white">
-            {isLoading
-              ? "Loading..."
-              : `${quizLength} ${quizLength <= 1 ? "quiz" : "quizzes"}`}
-          </Badge>
-
-          <div className="space-x-0.5">
-            {admin && (
+        {admin && (
+          <CardContent className="p-1">
+            <div className="flex space-x-2 justify-end">
               <Button
-                size="lg"
+                size="sm"
                 variant="ghost"
                 className="cursor-pointer"
                 onClick={onQuizAddClick}
               >
-                <CirclePlus className="size-5" />
+                <CirclePlus size={14} />
               </Button>
-            )}
-
-            {admin && (
               <Button
-                size="lg"
+                size="sm"
                 variant="ghost"
                 className="cursor-pointer"
                 onClick={onUpdateClick}
               >
-                <Edit className="size-5" />
+                <Edit size={14} />
               </Button>
-            )}
-
-            {(admin || isAiGenerated) && (
               <Button
-                size="lg"
+                size="sm"
                 variant="ghost"
                 className="text-red-600 hover:text-red-700 cursor-pointer"
-                onClick={(e) => handleDeleteTopic(e)}
+                onClick={handleDeleteTopic}
               >
-                <Trash2 className="size-5" />
+                <Trash2 size={14} />
               </Button>
-            )}
-          </div>
-        </CardContent>
+            </div>
+          </CardContent>
+        )}
       </Card>
     </>
   );

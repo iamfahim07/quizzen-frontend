@@ -1,11 +1,14 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "@tanstack/react-router";
-import { Brain } from "lucide-react";
+import { Brain, Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { z } from "zod";
 
 import { useAuth, type GoogleAuthInput } from "@/api/use-auth";
 
+import { SpinnerLoader } from "@/components/loader";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -18,21 +21,44 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { useSignupQueryState } from "@/hooks/use-signup-query-state";
-// import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthStore } from "@/hooks/use-auth-store";
-// import { z } from "zod";
+import { useSignupQueryState } from "@/hooks/use-signup-query-state";
+
+import { cn } from "@/lib/utils";
 
 interface LoginInputField {
   username: string;
   password: string;
 }
 
-interface RegisterInputField extends LoginInputField {
-  fullName: string;
-  email: string;
-  confirmPassword: string;
-}
+// interface RegisterInputField extends LoginInputField {
+//   fullName: string;
+//   email: string;
+//   confirmPassword: string;
+// }
+
+// Validation schema
+const signupSchema = z
+  .object({
+    fullName: z
+      .string()
+      .min(2, { message: "Full name must be at least 2 characters." }),
+    email: z.string().email({ message: "Please enter a valid email address." }),
+    username: z
+      .string()
+      .min(3, { message: "Username must be at least 3 characters." }),
+    password: z
+      .string()
+      .min(6, { message: "Password must be at least 6 characters." }),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+  });
+
+// TypeScript type directly from the schema
+type RegisterInputField = z.infer<typeof signupSchema>;
 
 export default function AuthPage() {
   const navigate = useNavigate();
@@ -42,14 +68,22 @@ export default function AuthPage() {
 
   const { isOpen, open, close } = useSignupQueryState();
 
-  const loginForm = useForm({
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const isDisabled = loginMutation.isPending || registerMutation.isPending;
+
+  const loginForm = useForm<LoginInputField>({
     defaultValues: {
       username: "",
       password: "",
     },
   });
 
-  const signupForm = useForm({
+  // 3. Connect the resolver to your signup form
+  const signupForm = useForm<RegisterInputField>({
+    resolver: zodResolver(signupSchema),
     defaultValues: {
       fullName: "",
       username: "",
@@ -68,23 +102,20 @@ export default function AuthPage() {
   };
 
   const onSignupSubmit = async (credentials: RegisterInputField) => {
-    const { password, confirmPassword, ...userData } = credentials;
+    // const { password, confirmPassword, ...userData } = credentials;
 
-    if (password !== confirmPassword) {
-      return;
-    }
+    // if (password !== confirmPassword) {
+    //   return;
+    // }
 
-    try {
-      const { data } = await registerMutation.mutateAsync({
-        password,
-        ...userData,
-      });
-      if (data?.username) {
-        setUser(data);
-        navigate({ to: "/" });
-      }
-    } catch {
-      toast.error("Failed to Signup");
+    // const { data } = await registerMutation.mutateAsync({
+    //   password,
+    //   ...userData,
+    // });
+    const { data } = await registerMutation.mutateAsync(credentials);
+    if (data?.username) {
+      setUser(data);
+      navigate({ to: "/" });
     }
   };
 
@@ -110,8 +141,20 @@ export default function AuthPage() {
           className="w-full"
         >
           <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="signup">Sign up</TabsTrigger>
+            <TabsTrigger
+              value="login"
+              className="cursor-pointer"
+              disabled={isDisabled}
+            >
+              Login
+            </TabsTrigger>
+            <TabsTrigger
+              value="signup"
+              className="cursor-pointer"
+              disabled={isDisabled}
+            >
+              Sign up
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="login" className="space-y-6">
@@ -157,14 +200,37 @@ export default function AuthPage() {
                         </div>
                       </div>
                       <FormControl>
-                        <Input
-                          className="bg-white shadow px-3 py-5 focus-visible:ring-[1px]"
-                          type="password"
-                          placeholder="••••••••"
-                          {...field}
-                          autoComplete="current-password"
-                          required
-                        />
+                        <div className="relative">
+                          <Input
+                            className="bg-white shadow px-3 py-5 pr-10 focus-visible:ring-[1px]"
+                            type={showLoginPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            {...field}
+                            autoComplete="current-password"
+                            required
+                          />
+
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent cursor-pointer"
+                            onClick={() =>
+                              setShowLoginPassword(!showLoginPassword)
+                            }
+                            aria-label={
+                              showLoginPassword
+                                ? "Hide password"
+                                : "Show password"
+                            }
+                          >
+                            {showLoginPassword ? (
+                              <EyeOff className="size-5 text-gray-400" />
+                            ) : (
+                              <Eye className="size-5 text-gray-400" />
+                            )}
+                          </Button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -173,9 +239,12 @@ export default function AuthPage() {
 
                 <Button
                   type="submit"
-                  className="w-full cursor-pointer"
-                  disabled={loginMutation.isPending}
+                  className="w-full flex justify-center items-center gap-2 cursor-pointer"
+                  disabled={isDisabled}
                 >
+                  {loginMutation.isPending && (
+                    <SpinnerLoader className="text-white" />
+                  )}
                   {loginMutation.isPending ? "Signing in..." : "Sign in"}
                 </Button>
               </form>
@@ -189,7 +258,7 @@ export default function AuthPage() {
                 className="space-y-4"
               >
                 <FormField
-                  // control={signupForm.control}
+                  control={signupForm.control}
                   name="fullName"
                   render={({ field }) => (
                     <FormItem>
@@ -200,7 +269,7 @@ export default function AuthPage() {
                           placeholder="John Doe"
                           {...field}
                           autoComplete="fullName"
-                          required
+                          // required
                         />
                       </FormControl>
                       <FormMessage />
@@ -209,7 +278,7 @@ export default function AuthPage() {
                 />
 
                 <FormField
-                  // control={signupForm.control}
+                  control={signupForm.control}
                   name="email"
                   render={({ field }) => (
                     <FormItem>
@@ -221,7 +290,7 @@ export default function AuthPage() {
                           placeholder="john@example.com"
                           {...field}
                           autoComplete="email"
-                          required
+                          // required
                         />
                       </FormControl>
                       <FormMessage />
@@ -230,7 +299,7 @@ export default function AuthPage() {
                 />
 
                 <FormField
-                  // control={signupForm.control}
+                  control={signupForm.control}
                   name="username"
                   render={({ field }) => (
                     <FormItem>
@@ -241,7 +310,7 @@ export default function AuthPage() {
                           placeholder="johndoe"
                           {...field}
                           autoComplete="username"
-                          required
+                          // required
                         />
                       </FormControl>
                       <FormMessage />
@@ -250,27 +319,50 @@ export default function AuthPage() {
                 />
 
                 <FormField
-                  // control={signupForm.control}
+                  control={signupForm.control}
                   name="password"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input
-                          className="bg-white shadow px-3 py-5 focus-visible:ring-[1px]"
-                          type="password"
-                          placeholder="••••••••"
-                          {...field}
-                          autoComplete="new-password"
-                          {...signupForm.register("password", {
-                            required: "Password is required",
-                            minLength: {
-                              value: 6,
-                              message: "At least 6 chars",
-                            },
-                          })}
-                          required
-                        />
+                        <div className="relative">
+                          <Input
+                            className="bg-white shadow px-3 py-5 pr-10 focus-visible:ring-[1px]"
+                            type={showSignupPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            {...field}
+                            autoComplete="new-password"
+                            // {...signupForm.register("password", {
+                            //   required: "Password is required",
+                            //   minLength: {
+                            //     value: 6,
+                            //     message: "At least 6 chars",
+                            //   },
+                            // })}
+                            // required
+                          />
+
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent cursor-pointer"
+                            onClick={() =>
+                              setShowSignupPassword(!showSignupPassword)
+                            }
+                            aria-label={
+                              showSignupPassword
+                                ? "Hide password"
+                                : "Show password"
+                            }
+                          >
+                            {showSignupPassword ? (
+                              <EyeOff className="size-5 text-gray-400" />
+                            ) : (
+                              <Eye className="size-5 text-gray-400" />
+                            )}
+                          </Button>
+                        </div>
                         {/* {errors.password && <p>{errors.password.message}</p>} */}
                       </FormControl>
                       <FormMessage />
@@ -279,30 +371,53 @@ export default function AuthPage() {
                 />
 
                 <FormField
-                  // control={signupForm.control}
+                  control={signupForm.control}
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Confirm password</FormLabel>
                       <FormControl>
-                        <Input
-                          className="bg-white shadow px-3 py-5 focus-visible:ring-[1px]"
-                          type="password"
-                          placeholder="••••••••"
-                          {...field}
-                          autoComplete="new-password"
-                          {...signupForm.register("confirmPassword", {
-                            required: "Confirm Password is required",
-                            validate: (value) =>
-                              value === signupForm.getValues("password") ||
-                              "Passwords must match",
-                            // minLength: {
-                            //   value: 6,
-                            //   message: "At least 6 chars",
-                            // },
-                          })}
-                          required
-                        />
+                        <div className="relative">
+                          <Input
+                            className="bg-white shadow px-3 py-5 pr-10 focus-visible:ring-[1px]"
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            {...field}
+                            autoComplete="new-password"
+                            // {...signupForm.register("confirmPassword", {
+                            //   required: "Confirm Password is required",
+                            //   validate: (value) =>
+                            //     value === signupForm.getValues("password") ||
+                            //     "Passwords must match",
+                            //   minLength: {
+                            //     value: 6,
+                            //     message: "At least 6 chars",
+                            //   },
+                            // })}
+                            // required
+                          />
+
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent cursor-pointer"
+                            onClick={() =>
+                              setShowConfirmPassword(!showConfirmPassword)
+                            }
+                            aria-label={
+                              showConfirmPassword
+                                ? "Hide password"
+                                : "Show password"
+                            }
+                          >
+                            {showConfirmPassword ? (
+                              <EyeOff className="size-5 text-gray-400" />
+                            ) : (
+                              <Eye className="size-5 text-gray-400" />
+                            )}
+                          </Button>
+                        </div>
                         {/* {errors.confirmPassword && (
                           <p>{errors.confirmPassword.message}</p>
                         )} */}
@@ -314,9 +429,12 @@ export default function AuthPage() {
 
                 <Button
                   type="submit"
-                  className="w-full cursor-pointer"
-                  disabled={registerMutation.isPending}
+                  className="w-full flex justify-center items-center gap-2 cursor-pointer"
+                  disabled={isDisabled}
                 >
+                  {registerMutation.isPending && (
+                    <SpinnerLoader className="text-white" />
+                  )}
                   {registerMutation.isPending
                     ? "Creating account..."
                     : "Create account"}
@@ -338,7 +456,12 @@ export default function AuthPage() {
             </div>
           </div>
 
-          <div className="mt-6 flex justify-center items-center">
+          <div
+            className={cn(
+              "mt-6 flex justify-center items-center",
+              isDisabled && "pointer-events-none cursor-not-allowed opacity-40"
+            )}
+          >
             <GoogleLogin
               text={isOpen ? "signup_with" : "signin_with"}
               onSuccess={async (credentialResponse) => {

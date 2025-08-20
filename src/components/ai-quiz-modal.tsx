@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { useAIQuizModal } from "@/hooks/use-ai-quiz-modal";
-import { useAppStore } from "@/hooks/use-app-store";
+import { useAiChatStore, useAiQuizStore } from "@/hooks/use-ai-quiz-store";
 import { useProgressStore } from "@/hooks/use-progress-store";
 
 import { cn } from "@/lib/utils";
@@ -19,12 +19,9 @@ export const AIQuizModal = () => {
 
   const { isOpen, close } = useAIQuizModal();
 
-  const {
-    chatHistoryById,
-    aiQuizDataById,
-    removeChatHistoryById,
-    removeAIQuizDataById,
-  } = useAppStore();
+  const { chatHistoryById, removeChatHistoryById } = useAiChatStore();
+  const { aiQuizDataById, removeAIQuizDataById } = useAiQuizStore();
+
   const chatHistory = chatHistoryById(aiQuizDataId!);
 
   const { progress } = useProgressStore();
@@ -53,16 +50,22 @@ export const AIQuizModal = () => {
                 if (chat.role === "user") {
                   return (
                     <div key={index} className="flex flex-col gap-0.5">
-                      <div className="w-full flex flex-wrap gap-0.5">
+                      <div className="flex gap-3 px-4 pb-2 overflow-x-auto">
                         {chat.attachments &&
                           chat.attachments.map((attachment, index) => (
                             <div
                               key={index}
-                              className="w-[32%] flex items-center gap-1 bg-gray-200 rounded-lg px-2 py-1 text-sm"
+                              className="group relative shrink-0 bg-gray-100 rounded-lg overflow-visible"
                             >
-                              <span className="truncate max-w-full">
-                                {attachment}
-                              </span>
+                              <div className="w-24 h-24 py-1 px-2 rounded-lg">
+                                <div className="w-full h-17 text-xs break-words text-wrap truncate">
+                                  {attachment}
+                                </div>
+
+                                <div className="bg-gray-700 text-white text-xs font-medium px-1.5 py-0.5 rounded text-center uppercase min-w-0">
+                                  {attachment.split(".").pop()}
+                                </div>
+                              </div>
                             </div>
                           ))}
                       </div>
@@ -206,16 +209,22 @@ export const AIQuizModal = () => {
                   if (chat.role === "user") {
                     return (
                       <div key={index} className="flex flex-col gap-0.5">
-                        <div className="w-full flex flex-wrap gap-0.5">
+                        <div className="flex gap-3 px-4 pb-2 overflow-x-auto">
                           {chat.attachments &&
                             chat.attachments.map((attachment, index) => (
                               <div
                                 key={index}
-                                className="w-[32%] flex items-center gap-1 bg-gray-200 rounded-lg px-2 py-1 text-sm"
+                                className="group relative shrink-0 bg-gray-100 rounded-lg overflow-visible"
                               >
-                                <span className="truncate max-w-full">
-                                  {attachment}
-                                </span>
+                                <div className="w-24 h-24 py-1 px-2 rounded-lg">
+                                  <div className="w-full h-17 text-xs break-words text-wrap truncate">
+                                    {attachment}
+                                  </div>
+
+                                  <div className="bg-gray-700 text-white text-xs font-medium px-1.5 py-0.5 rounded text-center uppercase min-w-0">
+                                    {attachment.split(".").pop()}
+                                  </div>
+                                </div>
                               </div>
                             ))}
                         </div>
