@@ -48,8 +48,8 @@ export default function AnalysisPage() {
   ];
 
   return (
-    <div className="min-h-screen pb-16 fade-in">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main className="fade-in animate-in duration-500">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="flex items-center mb-6">
             <BrainCircuit className="h-8 w-8 text-primary mr-4" />
@@ -241,7 +241,7 @@ export default function AnalysisPage() {
             </Button>
           </Link>
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }

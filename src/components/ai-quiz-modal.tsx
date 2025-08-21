@@ -178,7 +178,7 @@ export const AIQuizModal = () => {
   }
 
   return (
-    <ResponsiveModal open={isOpen}>
+    <ResponsiveModal open={isOpen} isDrawerDismissible={false}>
       <div className="w-full h-[95vh] flex flex-col bg-gray-50 overflow-hidden">
         <span
           className="absolute left-8 p-1 rounded-xl hover:bg-muted cursor-pointer"
