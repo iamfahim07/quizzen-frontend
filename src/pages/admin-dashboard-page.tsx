@@ -70,8 +70,8 @@ export default function AdminDashboardPage() {
   );
 
   return (
-    <div>
-      <div className="min-h-screen container mx-auto px-4 py-8">
+    <main className="fade-in animate-in duration-500">
+      <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="w-fit text-4xl font-bold bg-gradient-to-r from-violet-500 to-blue-600 bg-clip-text text-transparent mb-2">
             Admin Dashboard
@@ -351,6 +351,6 @@ export default function AdminDashboardPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </main>
   );
 }

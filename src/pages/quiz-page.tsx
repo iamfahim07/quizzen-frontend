@@ -283,8 +283,8 @@ export default function QuizPage() {
   }
 
   return (
-    <div className="min-h-screen pb-20 fade-in">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 mb-4">
+    <main className="fade-in animate-in duration-500">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 mb-4">
         <div className="w-full flex justify-between items-center bg-white/20 backdrop-blur-lg rounded-lg shadow-md border border-white/50 p-6 mb-6">
           <div>
             <h2 className="font-bold text-xl">{topic_name}</h2>
@@ -297,9 +297,9 @@ export default function QuizPage() {
             <Clock size={18} className="mr-2" /> {timeLeft}{" "}
           </div>
         </div>
-      </div>
+      </section>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white/20 backdrop-blur-lg rounded-lg shadow-md border border-white/50 p-6 mb-6">
           <h2 className="text-lg font-medium text-gray-900 mb-6">
             {currentQuiz?.question}
@@ -310,7 +310,8 @@ export default function QuizPage() {
               <Toggle
                 key={option?._id}
                 className={cn(
-                  "w-full h-auto whitespace-normal break-words bg-white border border-white/50 shadow py-[14px] px-6 justify-start cursor-pointer data-[state=on]:text-white data-[state=on]:bg-green-500",
+                  "w-full h-auto whitespace-normal break-words bg-white hover:bg-white hover:text-black border border-white/50 shadow py-[14px] px-6 justify-start cursor-pointer data-[state=on]:text-white data-[state=on]:bg-green-500",
+                  timeLeft > 0 && "hover:shadow-blue-500",
                   timeLeft === 0 && "cursor-not-allowed opacity-40"
                 )}
                 pressed={
@@ -339,7 +340,18 @@ export default function QuizPage() {
 
                   const dragImg = makeDragImage(option?.value ?? "");
 
-                  e.dataTransfer.setDragImage(dragImg, 10, 10);
+                  const elWidth = e.currentTarget.offsetWidth;
+
+                  const dragImgXoffset =
+                    dragImg.offsetWidth >= elWidth
+                      ? dragImg.offsetWidth * 0.5
+                      : dragImg.offsetWidth * 1;
+
+                  e.dataTransfer.setDragImage(
+                    dragImg,
+                    dragImgXoffset,
+                    dragImg.offsetHeight * 0.5
+                  );
 
                   requestAnimationFrame(() => {
                     setTimeout(() => {
@@ -395,7 +407,7 @@ export default function QuizPage() {
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         </div>
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }

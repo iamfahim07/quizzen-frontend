@@ -37,8 +37,8 @@ export default function RulesPage() {
   const quizzes = isAIQuizData ? aiQuizData?.quizzes : fetchedQuizzes;
 
   return (
-    <div className="min-h-screen fade-in">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main className="fade-in animate-in duration-500">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="flex items-center mb-4">
             <BrainCircuit className="max-md:hidden h-10 w-10 text-blue-600 flex-shrink-0 mr-4" />
@@ -174,7 +174,7 @@ export default function RulesPage() {
             </Button>
           </Link>
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }

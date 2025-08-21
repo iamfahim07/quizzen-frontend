@@ -8,6 +8,7 @@ interface ResponsiveModalProps {
   children: React.ReactNode;
   open: boolean;
   onOpenChange?: (open: boolean) => void;
+  isDrawerDismissible?: boolean;
   className?: string;
 }
 
@@ -15,6 +16,7 @@ export const ResponsiveModal = ({
   children,
   open,
   onOpenChange,
+  isDrawerDismissible = true,
   className,
 }: ResponsiveModalProps) => {
   const isDesktop = useMedia("(min-width: 1024px)", true);
@@ -35,7 +37,11 @@ export const ResponsiveModal = ({
   }
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
+    <Drawer
+      dismissible={isDrawerDismissible}
+      open={open}
+      onOpenChange={onOpenChange}
+    >
       <DrawerContent className="data-[vaul-drawer-direction=bottom]:max-h-[95vh]">
         {children}
       </DrawerContent>
