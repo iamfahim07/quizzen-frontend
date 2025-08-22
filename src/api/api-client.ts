@@ -1,4 +1,4 @@
-import { SERVER_BASE_URL } from "@/config";
+// import { SERVER_BASE_URL } from "@/config";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -14,7 +14,7 @@ export async function apiRequest<T = unknown>(
 ): Promise<Response> {
   const isForm = data instanceof FormData;
 
-  const res = await fetch(`${SERVER_BASE_URL}${url}`, {
+  const res = await fetch(`/api${url}`, {
     method,
     headers:
       isForm || !data ? undefined : { "Content-Type": "application/json" },
