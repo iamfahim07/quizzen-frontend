@@ -141,7 +141,7 @@ export default function AnalysisPage() {
                   )}
                 >
                   <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-medium text-gray-900">
+                    <h4 className="text-sm font-semibold text-gray-900">
                       Quiz {index + 1}
                     </h4>
                     <span
@@ -159,7 +159,7 @@ export default function AnalysisPage() {
                     <span className="font-semibold">Question: </span>{" "}
                     {singleQuizData.question}
                   </p>
-                  <p className="text-xs font-semibold text-gray-600">
+                  <p className="text-sm font-semibold text-gray-600">
                     {singleQuizData.isSortQuiz ? "Your sorting" : "Your answer"}
                     :{" "}
                     <span
@@ -178,7 +178,7 @@ export default function AnalysisPage() {
                     </span>
                   </p>
 
-                  <p className="text-xs font-semibold text-gray-600">
+                  <p className="text-sm font-semibold text-gray-600">
                     {singleQuizData.isSortQuiz
                       ? "Correct sorting"
                       : "Correct answer"}

@@ -31,13 +31,6 @@ interface LoginInputField {
   password: string;
 }
 
-// interface RegisterInputField extends LoginInputField {
-//   fullName: string;
-//   email: string;
-//   confirmPassword: string;
-// }
-
-// Validation schema
 const signupSchema = z
   .object({
     fullName: z
@@ -57,7 +50,6 @@ const signupSchema = z
     path: ["confirmPassword"],
   });
 
-// TypeScript type directly from the schema
 type RegisterInputField = z.infer<typeof signupSchema>;
 
 export default function AuthPage() {
@@ -81,7 +73,6 @@ export default function AuthPage() {
     },
   });
 
-  // 3. Connect the resolver to your signup form
   const signupForm = useForm<RegisterInputField>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -102,16 +93,6 @@ export default function AuthPage() {
   };
 
   const onSignupSubmit = async (credentials: RegisterInputField) => {
-    // const { password, confirmPassword, ...userData } = credentials;
-
-    // if (password !== confirmPassword) {
-    //   return;
-    // }
-
-    // const { data } = await registerMutation.mutateAsync({
-    //   password,
-    //   ...userData,
-    // });
     const { data } = await registerMutation.mutateAsync(credentials);
     if (data?.username) {
       setUser(data);
@@ -165,7 +146,6 @@ export default function AuthPage() {
                   className="space-y-4"
                 >
                   <FormField
-                    // control={loginForm.control}
                     name="username"
                     render={({ field }) => (
                       <FormItem>
@@ -185,7 +165,6 @@ export default function AuthPage() {
                   />
 
                   <FormField
-                    // control={loginForm.control}
                     name="password"
                     render={({ field }) => (
                       <FormItem>
@@ -270,7 +249,6 @@ export default function AuthPage() {
                             placeholder="John Doe"
                             {...field}
                             autoComplete="fullName"
-                            // required
                           />
                         </FormControl>
                         <FormMessage />
@@ -291,7 +269,6 @@ export default function AuthPage() {
                             placeholder="john@example.com"
                             {...field}
                             autoComplete="email"
-                            // required
                           />
                         </FormControl>
                         <FormMessage />
@@ -311,7 +288,6 @@ export default function AuthPage() {
                             placeholder="johndoe"
                             {...field}
                             autoComplete="username"
-                            // required
                           />
                         </FormControl>
                         <FormMessage />
@@ -340,7 +316,6 @@ export default function AuthPage() {
                               //     message: "At least 6 chars",
                               //   },
                               // })}
-                              // required
                             />
 
                             <Button
@@ -364,7 +339,6 @@ export default function AuthPage() {
                               )}
                             </Button>
                           </div>
-                          {/* {errors.password && <p>{errors.password.message}</p>} */}
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -395,7 +369,6 @@ export default function AuthPage() {
                               //     message: "At least 6 chars",
                               //   },
                               // })}
-                              // required
                             />
 
                             <Button
@@ -419,9 +392,6 @@ export default function AuthPage() {
                               )}
                             </Button>
                           </div>
-                          {/* {errors.confirmPassword && (
-                          <p>{errors.confirmPassword.message}</p>
-                        )} */}
                         </FormControl>
                         <FormMessage />
                       </FormItem>

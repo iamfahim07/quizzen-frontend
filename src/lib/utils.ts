@@ -31,6 +31,16 @@ export function secondsToMinutes(seconds: number) {
   return `${minutes}:${paddedSeconds}`;
 }
 
+export function scrollToPosition(
+  positionY: number,
+  behavior: ScrollBehavior = "smooth"
+) {
+  window.scrollTo({
+    top: positionY,
+    behavior,
+  });
+}
+
 export function generateUniqueId(prefix = "") {
   const timestamp = Date.now().toString(36);
   const randomStr = Math.random().toString(36).substring(2, 11);

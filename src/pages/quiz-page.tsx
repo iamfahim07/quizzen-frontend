@@ -1,6 +1,12 @@
+import {
+  DragDropContext,
+  Draggable,
+  Droppable,
+  type DropResult,
+} from "@hello-pangea/dnd";
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import { ArrowRight, Clock } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useGetQuizzes } from "@/api/use-get-quizzes";
 
@@ -16,20 +22,11 @@ import { useAiQuizStore } from "@/hooks/use-ai-quiz-store";
 import { useAnalysisStore } from "@/hooks/use-analysis-store";
 import { useTimer } from "@/hooks/use-timer";
 
-import { cn, makeDragImage, shuffleArrayElement } from "@/lib/utils";
+import { cn, scrollToPosition, shuffleArrayElement } from "@/lib/utils";
 
 import { SCORE_PER_QUIZ } from "@/config";
 
 import type { Option, Quiz } from "@/types";
-
-interface TouchMoveState {
-  x: number;
-  y: number;
-}
-
-interface TouchStartState extends TouchMoveState {
-  index: number;
-}
 
 export default function QuizPage() {
   const { topic_name, topic_id } = useParams({ strict: false });
@@ -39,13 +36,6 @@ export default function QuizPage() {
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState<Option[]>([]);
   const [shuffleOptions, setShuffleOptions] = useState<Option[]>([]);
-  const [isDragging, setIsDragging] = useState<{
-    status: boolean;
-    draggingElementId: null | string;
-  }>({
-    status: false,
-    draggingElementId: null,
-  });
   const [submittedQuizData, setSubmittedQuizData] = useState<
     (Quiz & {
       isCorrect: boolean;
@@ -53,12 +43,6 @@ export default function QuizPage() {
     })[]
   >([]);
   const [userStats, setUserStats] = useState({ timeTaken: 0, score: 0 });
-  // state variables for touch events
-  const [touchStart, setTouchStart] = useState<TouchStartState | null>(null);
-  const [touchMove, setTouchMove] = useState<TouchMoveState | null>(null);
-
-  const dragAnswer = useRef(0);
-  const dragOverAnswer = useRef(0);
 
   const { setUserAnalysisResultById } = useAnalysisStore();
   const { aiQuizDataById } = useAiQuizStore();
@@ -89,18 +73,6 @@ export default function QuizPage() {
   );
 
   const { timeLeft, duration } = useTimer(currentQuiz);
-
-  const handleSort = () => {
-    const cloneOptions = [...shuffleOptions];
-
-    [cloneOptions[dragAnswer.current], cloneOptions[dragOverAnswer.current]] = [
-      cloneOptions[dragOverAnswer.current],
-      cloneOptions[dragAnswer.current],
-    ];
-
-    setShuffleOptions(cloneOptions);
-    setSelectedOptions(cloneOptions);
-  };
 
   const checkAnswers = (): { isCorrect: boolean } => {
     if (currentQuiz && !currentQuiz?.isSortQuiz) {
@@ -200,65 +172,23 @@ export default function QuizPage() {
     } else {
       setCurrentQuizIndex(currentQuizIndex + 1);
       setSelectedOptions([]);
+      scrollToPosition(80);
     }
   };
 
-  // Touch event handlers
-  const handleTouchStart = (
-    e: React.TouchEvent,
-    index: number,
-    optionId: string
-  ) => {
-    if (timeLeft > 0 && currentQuiz?.isSortQuiz) {
-      dragAnswer.current = index;
-      setIsDragging({
-        status: true,
-        draggingElementId: optionId ?? "",
-      });
+  const onDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
 
-      const touch = e.touches[0];
-      setTouchStart({
-        x: touch.clientX,
-        y: touch.clientY,
-        index: index,
-      });
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!touchStart) return;
-
-    const touch = e.touches[0];
-    setTouchMove({
-      x: touch.clientX,
-      y: touch.clientY,
-    });
-
-    const elementBelow = document.elementFromPoint(
-      touch.clientX,
-      touch.clientY
-    );
-    const dropTarget = elementBelow?.closest("[data-drop-target]");
-
-    if (dropTarget) {
-      const targetIndex = parseInt(
-        dropTarget.getAttribute("data-index") ?? "0"
-      );
-      dragOverAnswer.current = targetIndex;
-    }
-  };
-
-  const handleTouchEnd = () => {
-    if (touchStart && touchMove) {
-      handleSort();
+    if (!destination || destination.index === source.index) {
+      return;
     }
 
-    setTouchStart(null);
-    setTouchMove(null);
-    setIsDragging({
-      status: false,
-      draggingElementId: null,
-    });
+    const reorderedOptions = Array.from(shuffleOptions);
+    const [movedOption] = reorderedOptions.splice(source.index, 1);
+    reorderedOptions.splice(destination.index, 0, movedOption);
+
+    setShuffleOptions(reorderedOptions);
+    setSelectedOptions(reorderedOptions);
   };
 
   useEffect(() => {
@@ -293,108 +223,83 @@ export default function QuizPage() {
             </p>
           </div>
 
-          <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800">
-            <Clock size={18} className="mr-2" /> {timeLeft}{" "}
+          <div className="inline-flex items-center px-4 py-2 rounded-full font-semibold bg-green-100 text-green-800">
+            <Clock className="size-5 mr-2" /> {timeLeft}{" "}
           </div>
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white/20 backdrop-blur-lg rounded-lg shadow-md border border-white/50 p-6 mb-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-8 pb-8">
+        <div className="bg-white/20 rounded-lg shadow-md border border-white/50 pt-6 px-6 mb-6">
           <h2 className="text-lg font-medium text-gray-900 mb-6">
             {currentQuiz?.question}
           </h2>
 
-          <div className="flex flex-col gap-6">
-            {shuffleOptions?.map((option, index) => (
-              <Toggle
-                key={option?._id}
-                className={cn(
-                  "w-full h-auto whitespace-normal break-words bg-white hover:bg-white hover:text-black border border-white/50 shadow py-[14px] px-6 justify-start cursor-pointer data-[state=on]:text-white data-[state=on]:bg-green-500",
-                  timeLeft > 0 && "hover:shadow-blue-500",
-                  timeLeft === 0 && "cursor-not-allowed opacity-40"
+          {currentQuiz?.isSortQuiz ? (
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId={currentQuiz._id!}>
+                {(provided) => (
+                  <div ref={provided.innerRef} {...provided.droppableProps}>
+                    {shuffleOptions?.map((option, index) => (
+                      <Draggable
+                        key={option._id}
+                        draggableId={option._id!}
+                        index={index}
+                        isDragDisabled={timeLeft === 0}
+                      >
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className={cn(
+                              "w-full h-auto mb-6 whitespace-normal break-words bg-white hover:bg-white hover:text-black border border-white/50 shadow py-[14px] px-6 justify-start cursor-grab",
+                              "rounded-md text-sm font-medium",
+                              snapshot.isDragging &&
+                                "shadow-lg shadow-blue-500 ring-2 ring-blue-400",
+                              timeLeft > 0 && "hover:shadow-blue-500",
+                              timeLeft === 0 && "cursor-not-allowed opacity-40"
+                            )}
+                          >
+                            <p className={cn("w-full text-start")}>
+                              {option?.value}
+                            </p>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
                 )}
-                pressed={
-                  !currentQuiz?.isSortQuiz &&
-                  selectedOptions?.some(
-                    (selectedOption) => selectedOption._id === option._id
-                  )
-                }
-                onClick={
-                  currentQuiz?.isSortQuiz
-                    ? undefined
-                    : () => toggleClick(option)
-                }
-                // Add data attributes for touch handling
-                data-drop-target={currentQuiz?.isSortQuiz ? "true" : undefined}
-                data-index={index}
-                draggable={
-                  timeLeft > 0 && currentQuiz?.isSortQuiz ? true : false
-                }
-                onDragStart={(e) => {
-                  dragAnswer.current = index;
-                  setIsDragging({
-                    status: true,
-                    draggingElementId: option?._id ?? "",
-                  });
-
-                  const dragImg = makeDragImage(option?.value ?? "");
-
-                  const elWidth = e.currentTarget.offsetWidth;
-
-                  const dragImgXoffset =
-                    dragImg.offsetWidth >= elWidth
-                      ? dragImg.offsetWidth * 0.5
-                      : dragImg.offsetWidth * 1;
-
-                  e.dataTransfer.setDragImage(
-                    dragImg,
-                    dragImgXoffset,
-                    dragImg.offsetHeight * 0.5
-                  );
-
-                  requestAnimationFrame(() => {
-                    setTimeout(() => {
-                      if (dragImg && dragImg.parentNode)
-                        dragImg.parentNode.removeChild(dragImg);
-                    }, 0);
-                  });
-                }}
-                onDrag={() => (dragAnswer.current = index)}
-                // onDragEnter={() => {
-                //   dragOverAnswer.current = index;
-                //   handleSort();
-                // }}
-                onDrop={() => {
-                  dragOverAnswer.current = index;
-                  handleSort();
-                }}
-                onDragOver={(e) => e.preventDefault()}
-                onDragEnd={() => {
-                  setIsDragging({
-                    status: false,
-                    draggingElementId: null,
-                  });
-                }}
-                // Touch events (for mobile)
-                onTouchStart={(e) => handleTouchStart(e, index, option._id!)}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-              >
-                <p
+              </Droppable>
+            </DragDropContext>
+          ) : (
+            <div>
+              {shuffleOptions?.map((option) => (
+                <Toggle
+                  key={option?._id}
                   className={cn(
-                    "w-full text-start",
-                    isDragging.status &&
-                      isDragging.draggingElementId === option?._id
-                      ? "invisible"
-                      : "visible"
+                    "w-full h-auto mb-6 whitespace-normal break-words bg-white hover:bg-white hover:text-black border border-white/50 shadow py-[14px] px-6 justify-start cursor-pointer data-[state=on]:text-white data-[state=on]:bg-green-500",
+                    timeLeft > 0 && "hover:shadow-blue-500",
+                    timeLeft === 0 && "cursor-not-allowed opacity-40"
                   )}
+                  pressed={
+                    !currentQuiz?.isSortQuiz &&
+                    selectedOptions?.some(
+                      (selectedOption) => selectedOption._id === option._id
+                    )
+                  }
+                  onClick={
+                    currentQuiz?.isSortQuiz
+                      ? undefined
+                      : () => toggleClick(option)
+                  }
                 >
-                  {option?.value}
-                </p>
-              </Toggle>
-            ))}
-          </div>
+                  <p className={cn("w-full text-start")}>{option?.value}</p>
+                </Toggle>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="flex justify-end">

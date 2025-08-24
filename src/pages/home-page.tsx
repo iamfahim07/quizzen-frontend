@@ -72,15 +72,6 @@ export default function HomePage() {
           )}
           <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {allAIQuizData?.map((topic) => (
-              // <Link
-              //   key={topic.conversationId}
-              //   to="/rules/$topic_name/$topic_id"
-              //   params={{
-              //     topic_name: topic.topic!,
-              //     topic_id: topic.conversationId,
-              //   }}
-              //   search={{ source: "ai" }}
-              // >
               <TopicCard
                 key={topic.conversationId}
                 topic={topic}
@@ -89,7 +80,6 @@ export default function HomePage() {
                   handleClick(topic.topic!, topic.conversationId, "ai")
                 }
               />
-              // </Link>
             ))}
           </div>
         </section>
@@ -110,12 +100,6 @@ export default function HomePage() {
           {!isPending && !error && topics.length > 0 && (
             <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {topics?.map((topic) => (
-                // <Link
-                //   key={topic._id}
-                //   to="/rules/$topic_name/$topic_id"
-                //   params={{ topic_name: topic.title!, topic_id: topic._id! }}
-                //   search={{ source: "db" }}
-                // >
                 <TopicCard
                   key={topic._id}
                   topic={topic}
@@ -124,7 +108,6 @@ export default function HomePage() {
                     handleClick(topic.title!, topic._id!, "db")
                   }
                 />
-                // </Link>
               ))}
             </div>
           )}

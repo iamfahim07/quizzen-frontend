@@ -53,7 +53,7 @@ export default function Header({ title, showProfile = false }: HeaderProps) {
         )}
 
         {user && !isLoading && (
-          <div className="flex justify-center items-center gap-14">
+          <div className="flex justify-center items-center gap-6 sm:gap-10 md:gap-14">
             {user && user.role === "admin" && !isLoading && (
               <Button
                 variant="outline"
