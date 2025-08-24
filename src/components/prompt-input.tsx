@@ -32,8 +32,6 @@ interface PromptInputProps {
   modifyExisting?: boolean;
 }
 
-// type Difficulty = "easy" | "medium" | "hard";
-
 interface FileWithPreview {
   id: string;
   file: File;

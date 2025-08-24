@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 
 import { useConfirm } from "@/hooks/use-confirm";
 
+import { cn } from "@/lib/utils";
+
 import type { Quiz } from "@/types";
 
 interface QuizzesListProps {
@@ -68,17 +70,29 @@ export const QuizzesList = ({
         >
           <div className="w-full">
             <div className="mb-2">
-              <h4 className="font-medium text-gray-900">Quiz {index + 1}</h4>
+              <h4 className="font-semibold text-gray-900">Quiz {index + 1}</h4>
             </div>
-            <p className="text-sm text-gray-700 mb-2">
+            <p className="text-gray-700 mb-2">
               <span className="font-semibold">Question:</span> {quiz.question}
             </p>
 
-            <p className="text-xs text-gray-600">
-              <span className="font-semibold">Options: </span>
-              <span className="font-medium text-green-700">
-                {quiz.options.map((option) => option.value).join(", ")}
+            <p className="text-gray-600">
+              <span className="font-semibold">
+                {quiz.isSortQuiz ? "Correct sorting: " : "Options: "}
               </span>
+              {quiz.options.map((option, index) => (
+                <span
+                  key={option._id}
+                  className={cn(
+                    "font-medium text-red-700",
+                    quiz.isSortQuiz && "text-green-700",
+                    !quiz.isSortQuiz && option.isCorrect && "text-green-700"
+                  )}
+                >
+                  {index ? ", " : ""}
+                  {option.value}
+                </span>
+              ))}
             </p>
           </div>
 

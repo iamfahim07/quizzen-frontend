@@ -72,8 +72,6 @@ export default function TopicCard({
     } else if (admin) {
       mutation.mutate({ topicId: idToDelete });
     }
-
-    // mutation.mutate({ topicId: topic._id! });
   };
 
   const quizLength =

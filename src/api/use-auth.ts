@@ -29,7 +29,6 @@ export interface GetUserResponse {
 
 export const useAuth = () => {
   const loginMutation = useMutation<GetUserResponse, Error, LoginInput>({
-    // mutationKey: ["user-query"],
     mutationFn: async (credentials: LoginInput): Promise<GetUserResponse> => {
       const response = await apiRequest("POST", "/user/login", credentials);
 

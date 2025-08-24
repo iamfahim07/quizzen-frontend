@@ -37,7 +37,6 @@ const createTopicFormSchema = (isEditing: boolean = false) =>
       .trim()
       .min(2, "Title must be at least 2 characters")
       .max(40, "Title must be less than 40 characters"),
-    // .regex(/^[a-zA-Z\s]+$/, "Title can only contain letters and spaces"),
     description: z
       .string()
       .trim()
@@ -158,7 +157,6 @@ export default function TopicForm({
         <Label htmlFor="description">Description</Label>
         <Textarea
           {...register("description")}
-          // type="text"
           id="description"
           placeholder="Enter topic description"
           rows={3}
@@ -195,7 +193,6 @@ export default function TopicForm({
               accept="image/*"
               onChange={handleFileChange}
               className="hidden -z-50"
-              // required={!topic}
               disabled={isPending}
             />
             <label htmlFor="topic_image">

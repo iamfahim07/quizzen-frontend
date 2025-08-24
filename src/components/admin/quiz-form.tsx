@@ -64,7 +64,6 @@ const questionSchema = z
     }
   );
 
-// Main form schema with a custom refinement for conditional validation
 const quizFormSchema = z
   .object({
     topicId: z.string().trim().min(1, "Please select a topic."),
@@ -72,29 +71,6 @@ const quizFormSchema = z
     quizzes: z
       .array(questionSchema)
       .min(1, "At least one question is required."),
-    // .refine(
-    //   (quizzes) => {
-    //     return quizzes.every(
-    //       (q) => q.type === "sortable" || q.correctAnswers.length > 0
-    //     );
-    //   },
-    //   (quizzes) => {
-    //     const errorIndices = quizzes
-    //       .map((q, index) =>
-    //         q.type === "multiple-choice" && q.correctAnswers.length === 0
-    //           ? index + 1
-    //           : null
-    //       )
-    //       .filter(Boolean);
-
-    //     const message =
-    //       errorIndices.length === 1
-    //         ? `Question ${errorIndices[0]}: Multiple-choice questions must have at least one correct answer selected.`
-    //         : `Questions ${errorIndices.join(", ")}: Multiple-choice questions must have at least one correct answer selected.`;
-
-    //     return { message };
-    //   }
-    // ),
   })
   .superRefine(({ quizzes }, ctx) => {
     const errorIndices: number[] = [];
@@ -102,12 +78,10 @@ const quizFormSchema = z
     quizzes.forEach((quiz, index) => {
       let hasError = false;
 
-      // Check question
       if (!quiz.question || quiz.question.trim().length === 0) {
         hasError = true;
       }
 
-      // Check options
       if (
         !quiz.options ||
         quiz.options.length !== 4 ||
@@ -116,7 +90,6 @@ const quizFormSchema = z
         hasError = true;
       }
 
-      // Check correct answers for multiple-choice
       if (
         quiz.type === "multiple-choice" &&
         (!quiz.correctAnswers || quiz.correctAnswers.length === 0)
@@ -125,7 +98,7 @@ const quizFormSchema = z
       }
 
       if (hasError) {
-        errorIndices.push(index + 1); // +1 for human-readable numbering
+        errorIndices.push(index + 1);
       }
     });
 
@@ -142,7 +115,7 @@ const quizFormSchema = z
       });
     }
   });
-// Infer the TypeScript type from the schema
+
 export type QuizFormData = z.infer<typeof quizFormSchema>;
 
 export default function QuizForm({
@@ -192,7 +165,6 @@ export default function QuizForm({
 
   useEffect(() => {
     const subscription = form.watch((_, { name }) => {
-      // Trigger custom validation when quiz-related fields change
       if (name && name.startsWith("quizzes")) {
         form.trigger("quizValidationSummary");
       }
@@ -200,11 +172,6 @@ export default function QuizForm({
 
     return () => subscription.unsubscribe();
   }, [form]);
-
-  // const [topicId, setTopicId] = useState(topic?._id || "");
-  // const [quizzes, setQuizzes] = useState<QuestionForm[]>([
-  //   editQuiz ?? defaultQuiz,
-  // ]);
 
   const { data: { data: topicsData } = { data: [] } } = useGetTopics();
 
@@ -221,71 +188,12 @@ export default function QuizForm({
   const isPending = isCreatePending || isUpdatePending;
 
   const addQuestion = () => {
-    // setQuizzes([
-    //   ...quizzes,
-    //   {
-    //     question: "",
-    //     options: ["", "", "", ""],
-    //     correctAnswers: [],
-    //     type: "multiple-choice",
-    //   },
-    // ]);
     append(defaultQuiz);
   };
 
   const removeQuestion = (index: number) => {
-    // setQuizzes(quizzes.filter((_, i) => i !== index));
     remove(index);
   };
-
-  // const updateQuestion = (
-  //   index: number,
-  //   field: keyof QuestionForm,
-  //   value: string | number | unknown[]
-  // ) => {
-  //   const updated = quizzes.map((q, i) =>
-  //     i === index ? { ...q, [field]: value } : q
-  //   );
-  //   setQuizzes(updated);
-  // };
-
-  // const updateQuestionOption = (
-  //   quizIndex: number,
-  //   optionIndex: number,
-  //   value: string
-  // ) => {
-  //   const updated = quizzes.map((q, i) =>
-  //     i === quizIndex
-  //       ? {
-  //           ...q,
-  //           options: q.options.map((opt, oi) =>
-  //             oi === optionIndex ? value : opt
-  //           ),
-  //         }
-  //       : q
-  //   );
-  //   setQuizzes(updated);
-  // };
-
-  // const moveOption = (
-  //   quizIndex: number,
-  //   optionIndex: number,
-  //   direction: "up" | "down"
-  // ) => {
-  //   const question = quizzes[quizIndex];
-  //   if (!question) return;
-
-  //   const newIndex = direction === "up" ? optionIndex - 1 : optionIndex + 1;
-  //   if (newIndex < 0 || newIndex >= question.options.length) return;
-
-  //   const newOptions = [...question.options];
-  //   [newOptions[optionIndex], newOptions[newIndex]] = [
-  //     newOptions[newIndex],
-  //     newOptions[optionIndex],
-  //   ];
-
-  //   updateQuestion(quizIndex, "options", newOptions);
-  // };
 
   const swapQuizOptions = (
     quizIndex: number,
@@ -312,33 +220,22 @@ export default function QuizForm({
   };
 
   const onSubmit = (data: QuizFormData) => {
-    // e.preventDefault();
-
-    // if (!topicId) return;
-
     const { quizzes } = data;
 
-    const validQuestions = quizzes
-      // .filter((q) => q.question.trim() && q.options.every((opt) => opt.trim()))
-      .map((q) => {
-        const isSortable = q.type === "sortable";
+    const validQuestions = quizzes.map((q) => {
+      const isSortable = q.type === "sortable";
 
-        return {
-          question: q.question,
-          isSortQuiz: isSortable,
-          isMultiple: isSortable ? false : q.correctAnswers.length > 1,
-          options: q.options.map((option, index) => ({
-            value: option,
-            isCorrect: isSortable ? false : q.correctAnswers.includes(index),
-            position: isSortable ? index + 1 : null,
-          })),
-        };
-      });
-
-    // if (quizzes.length !== validQuestions.length) {
-    //   alert("Empty field detected, Please fill out the empty field.");
-    //   return;
-    // }
+      return {
+        question: q.question,
+        isSortQuiz: isSortable,
+        isMultiple: isSortable ? false : q.correctAnswers.length > 1,
+        options: q.options.map((option, index) => ({
+          value: option,
+          isCorrect: isSortable ? false : q.correctAnswers.includes(index),
+          position: isSortable ? index + 1 : null,
+        })),
+      };
+    });
 
     const payload = validQuestions.map((q) => ({
       id: editingQuiz?._id,
@@ -363,7 +260,6 @@ export default function QuizForm({
               value={field.value}
               onValueChange={field.onChange}
               disabled={isPending || !!topic?._id}
-              // required
             >
               <SelectTrigger className="w-full cursor-pointer">
                 <SelectValue placeholder="Select a topic" />
@@ -431,7 +327,6 @@ export default function QuizForm({
                         value={field.value}
                         onChange={field.onChange}
                         placeholder="Enter your question"
-                        // required
                         disabled={isPending}
                       />
                     )}
@@ -510,20 +405,8 @@ export default function QuizForm({
                           name={`quizzes.${quizIndex}.options.${optionIndex}`}
                           render={({ field }) => (
                             <Input
-                              // {...form.register(
-                              //   `quizzes.${quizIndex}.options.${optionIndex}`
-                              // )}
                               {...field}
-                              // value={option}
-                              // onChange={(e) =>
-                              //   updateQuestionOption(
-                              //     quizIndex,
-                              //     optionIndex,
-                              //     e.target.value
-                              //   )
-                              // }
                               placeholder={`Option ${optionIndex + 1}`}
-                              // required
                               disabled={isPending}
                             />
                           )}
@@ -535,9 +418,6 @@ export default function QuizForm({
                               type="button"
                               variant="outline"
                               size="sm"
-                              // onClick={() =>
-                              //   moveOption(quizIndex, optionIndex, "up")
-                              // }
                               onClick={() =>
                                 swapQuizOptions(
                                   quizIndex,
@@ -554,9 +434,6 @@ export default function QuizForm({
                               type="button"
                               variant="outline"
                               size="sm"
-                              // onClick={() =>
-                              //   moveOption(quizIndex, optionIndex, "down")
-                              // }
                               onClick={() =>
                                 swapQuizOptions(
                                   quizIndex,
@@ -564,10 +441,6 @@ export default function QuizForm({
                                   optionIndex + 1
                                 )
                               }
-                              // disabled={
-                              //   isPending ||
-                              //   optionIndex === quiz.options.length - 1
-                              // }
                               disabled={
                                 isPending ||
                                 optionIndex ===
@@ -592,20 +465,7 @@ export default function QuizForm({
                                   form.getValues(
                                     `quizzes.${quizIndex}.correctAnswers`
                                   ) || [];
-                                // if (e.target.checked) {
-                                //   updateQuestion(quizIndex, "correctAnswers", [
-                                //     ...currentAnswers,
-                                //     optionIndex,
-                                //   ]);
-                                // } else {
-                                //   updateQuestion(
-                                //     quizIndex,
-                                //     "correctAnswers",
-                                //     currentAnswers.filter(
-                                //       (i) => i !== optionIndex
-                                //     )
-                                //   );
-                                // }
+
                                 const newAnswers = e.target.checked
                                   ? [...currentAnswers, optionIndex]
                                   : currentAnswers.filter(
@@ -619,10 +479,6 @@ export default function QuizForm({
                                     shouldValidate: true,
                                   }
                                 );
-
-                                // form.trigger(
-                                //   `quizzes.${quizIndex}.correctAnswers`
-                                // );
                               }}
                               className="w-4 h-4 cursor-pointer"
                               disabled={isPending}
