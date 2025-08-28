@@ -2,6 +2,7 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { ChevronLeft, HistoryIcon } from "lucide-react";
 import { useMedia } from "react-use";
 
+import { EmptyStateComponent } from "@/components/fallback-component";
 import PromptInput from "@/components/prompt-input";
 import { ResponsiveModal } from "@/components/responsive-modal";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,8 @@ export const AIQuizModal = () => {
   const navigate = useNavigate();
 
   const isDesktop = useMedia("(min-width: 1024px)", true);
+
+  const isDisable = aiQuizData?.isPending || !aiQuizData?.quizzes?.length;
 
   if (isDesktop) {
     return (
@@ -78,7 +81,13 @@ export const AIQuizModal = () => {
                 }
 
                 return (
-                  <div key={index}>
+                  <div
+                    key={index}
+                    className={cn(
+                      chat.isError &&
+                        "w-fit py-1 px-2 rounded-lg border border-red-500 text-red-500"
+                    )}
+                  >
                     <p>{chat.text}</p>
                   </div>
                 );
@@ -108,11 +117,9 @@ export const AIQuizModal = () => {
                 </div>
               )}
 
-              {!aiQuizData?.isPending && aiQuizData?.isSuccess && (
-                <h1 className="text-2xl font-medium text-gray-800 mb-4">
-                  {aiQuizData.topic ?? "No topic found"}
-                </h1>
-              )}
+              {!aiQuizData?.isPending &&
+                aiQuizData?.isSuccess &&
+                !aiQuizData.quizzes?.length && <EmptyStateComponent />}
 
               {!aiQuizData?.isPending &&
                 aiQuizData?.isSuccess &&
@@ -166,7 +173,7 @@ export const AIQuizModal = () => {
                   });
                   close();
                 }}
-                disabled={aiQuizData?.isPending}
+                disabled={isDisable}
               >
                 Go Ahed
               </Button>
@@ -237,7 +244,13 @@ export const AIQuizModal = () => {
                   }
 
                   return (
-                    <div key={index}>
+                    <div
+                      key={index}
+                      className={cn(
+                        chat.isError &&
+                          "w-fit py-1 px-2 rounded-lg border border-red-500 text-red-500"
+                      )}
+                    >
                       <p>{chat.text}</p>
                     </div>
                   );
@@ -282,11 +295,9 @@ export const AIQuizModal = () => {
                   </div>
                 )}
 
-                {!aiQuizData?.isPending && aiQuizData?.isSuccess && (
-                  <h1 className="text-2xl font-medium text-gray-800 mb-1">
-                    {aiQuizData.topic ?? "No topic found"}
-                  </h1>
-                )}
+                {!aiQuizData?.isPending &&
+                  aiQuizData?.isSuccess &&
+                  !aiQuizData.quizzes?.length && <EmptyStateComponent />}
 
                 {!aiQuizData?.isPending &&
                   aiQuizData?.isSuccess &&
@@ -340,7 +351,7 @@ export const AIQuizModal = () => {
                     });
                     close();
                   }}
-                  disabled={aiQuizData?.isPending}
+                  disabled={isDisable}
                 >
                   Go Ahed
                 </Button>
