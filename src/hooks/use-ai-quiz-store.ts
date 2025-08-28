@@ -10,6 +10,7 @@ interface ChatBody {
   role: "ai" | "user";
   text: string;
   attachments?: string[] | null;
+  isError?: boolean;
 }
 
 interface ChatSliceState {

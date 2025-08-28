@@ -27,7 +27,7 @@ interface GenerateAiQuizzesResponse {
 }
 
 export const useGenerateAiQuizzes = () => {
-  const { setProgress } = useProgressStore();
+  const { setProgress, resetProgress } = useProgressStore();
   const { setChatHistoryById } = useAiChatStore();
   const { setAIQuizDataById } = useAiQuizStore();
 
@@ -71,9 +71,9 @@ export const useGenerateAiQuizzes = () => {
         isPending: false,
         isSuccess: true,
         isError: false,
-        topic: topic,
-        description: description,
-        quizzes: quizData,
+        ...(topic.length > 0 && { topic: topic }),
+        ...(description.length > 0 && { description: description }),
+        ...(quizData.length > 0 && { quizzes: quizData }),
       });
 
       setChatHistoryById(conversationId, {
@@ -81,8 +81,23 @@ export const useGenerateAiQuizzes = () => {
         text: message,
       });
     },
-    onError: () => {
+    onError: (_, variables: GenerateAiQuizzesInput) => {
       toast.error("Failed to create quizzes");
+
+      setAIQuizDataById({
+        conversationId: variables.conversationId,
+        isPending: false,
+        isSuccess: false,
+        isError: true,
+      });
+
+      setChatHistoryById(variables.conversationId, {
+        role: "ai",
+        text: "An error occurred. Please try again.",
+        isError: true,
+      });
+
+      resetProgress();
     },
   });
 
