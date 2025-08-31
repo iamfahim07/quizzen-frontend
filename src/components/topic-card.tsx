@@ -49,8 +49,8 @@ export default function TopicCard({
   const title = topic.title || topic.topic || "";
 
   const [DeleteTopicDialog, confirmDeleteTopic] = useConfirm(
-    `Delete ${title} Topic?`,
-    "This action cannot be undone.",
+    `Delete Topic: ${[".", "!", "?"].some((p) => title.endsWith(p)) ? title.slice(0, -1) + "?" : title + "?"}`,
+    "Are you sure you want to delete this topic? All quizzes associated with this topic will also be deleted. This action cannot be undone.",
     "destructive"
   );
   const { removeAIQuizDataById } = useAiQuizStore();

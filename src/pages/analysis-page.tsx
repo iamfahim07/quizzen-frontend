@@ -159,44 +159,71 @@ export default function AnalysisPage() {
                     <span className="font-semibold">Question: </span>{" "}
                     {singleQuizData.question}
                   </p>
-                  <p className="text-sm font-semibold text-gray-600">
-                    {singleQuizData.isSortQuiz ? "Your sorting" : "Your answer"}
-                    :{" "}
-                    <span
-                      className={cn(
-                        `font-medium`,
-                        singleQuizData.isCorrect
-                          ? "text-green-700"
-                          : "text-red-700"
-                      )}
-                    >
-                      {singleQuizData.selectedOptions.length > 0
-                        ? singleQuizData.selectedOptions
-                            .map((option) => option.value)
-                            .join(", ")
-                        : "You didn't select any options."}
-                    </span>
-                  </p>
+                  <div className="w-full flex flex-col md:flex-row gap-2">
+                    <div className="w-full md:w-1/2 text-sm font-medium">
+                      <p className="text-sm font-semibold text-gray-600">
+                        {singleQuizData.isSortQuiz
+                          ? "Your sorting"
+                          : "Your answer"}
+                        :
+                      </p>
+                      {singleQuizData.selectedOptions.length > 0 &&
+                        singleQuizData.selectedOptions.map((option) => (
+                          <div
+                            key={option._id}
+                            className={cn(
+                              "py-1 px-2 rounded mt-1",
+                              singleQuizData.isCorrect
+                                ? "text-green-700 border border-green-600"
+                                : "text-red-700 border border-red-600"
+                            )}
+                          >
+                            {option.value}
+                          </div>
+                        ))}
 
-                  <p className="text-sm font-semibold text-gray-600">
-                    {singleQuizData.isSortQuiz
-                      ? "Correct sorting"
-                      : "Correct answer"}
-                    :{" "}
-                    <span className="font-medium text-green-700">
-                      {singleQuizData.isSortQuiz
-                        ? singleQuizData.options
-                            .sort(
-                              (a, b) => (a?.position ?? 0) - (b?.position ?? 0)
-                            )
-                            .map((option) => option.value)
-                            .join(", ")
-                        : singleQuizData.options
-                            .filter((option) => option.isCorrect)
-                            .map((option) => option.value)
-                            .join(", ")}
-                    </span>
-                  </p>
+                      {singleQuizData.selectedOptions.length === 0 && (
+                        <div className="py-1 px-2 rounded mt-1 text-red-700 border border-red-600">
+                          You didn't select any options.
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="w-full md:w-1/2 text-sm font-medium">
+                      <p className="text-sm font-semibold text-gray-600">
+                        {singleQuizData.isSortQuiz
+                          ? "Correct sorting"
+                          : "Correct answer"}
+                        :
+                      </p>
+
+                      {singleQuizData.isSortQuiz &&
+                        singleQuizData.options
+                          .sort(
+                            (a, b) => (a?.position ?? 0) - (b?.position ?? 0)
+                          )
+                          .map((option) => (
+                            <div
+                              key={option._id}
+                              className="py-1 px-2 rounded mt-1 text-green-700 border border-green-600"
+                            >
+                              {option.value}
+                            </div>
+                          ))}
+
+                      {!singleQuizData.isSortQuiz &&
+                        singleQuizData.options
+                          .filter((option) => option.isCorrect)
+                          .map((option) => (
+                            <div
+                              key={option._id}
+                              className="py-1 px-2 rounded mt-1 text-green-700 border border-green-600"
+                            >
+                              {option.value}
+                            </div>
+                          ))}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
