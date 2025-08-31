@@ -14,6 +14,7 @@ import {
   EmptyStateComponent,
   ErrorComponent,
 } from "@/components/fallback-component";
+import { SpinnerLoader } from "@/components/loader";
 import { QuizSkeletonLoader } from "@/components/skeleton-loaders";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
@@ -43,6 +44,7 @@ export default function QuizPage() {
     })[]
   >([]);
   const [userStats, setUserStats] = useState({ timeTaken: 0, score: 0 });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { setUserAnalysisResultById } = useAnalysisStore();
   const { aiQuizDataById } = useAiQuizStore();
@@ -72,7 +74,9 @@ export default function QuizPage() {
     [quizzes, currentQuizIndex]
   );
 
-  const { timeLeft, duration } = useTimer(currentQuiz);
+  const { timeLeft, stopTimer } = useTimer(currentQuiz);
+
+  const isDisabled = timeLeft === 0 || isSubmitting;
 
   const checkAnswers = (): { isCorrect: boolean } => {
     if (currentQuiz && !currentQuiz?.isSortQuiz) {
@@ -108,7 +112,7 @@ export default function QuizPage() {
   };
 
   const toggleClick = (option: Option) => {
-    if (timeLeft === 0) return;
+    if (isDisabled) return;
 
     if (
       selectedOptions.some(
@@ -124,59 +128,70 @@ export default function QuizPage() {
     setSelectedOptions((prev) => [...prev, option]);
   };
 
-  const handleNextQuiz = () => {
-    const { isCorrect } = checkAnswers();
+  const handleNextQuiz = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
 
-    setUserStats((prev) => ({
-      timeTaken: prev.timeTaken + duration,
-      score: prev.score + (isCorrect ? Number(SCORE_PER_QUIZ) : 0),
-    }));
+    try {
+      const duration = stopTimer();
 
-    setSubmittedQuizData((prev) => [
-      ...prev,
-      {
-        isCorrect,
-        selectedOptions,
-        ...currentQuiz,
-      },
-    ]);
+      const { isCorrect } = checkAnswers();
 
-    if (currentQuizIndex === quizzes.length - 1) {
-      const nextSubmittedQuizData = [
-        ...submittedQuizData,
+      setUserStats((prev) => ({
+        timeTaken: prev.timeTaken + duration,
+        score: prev.score + (isCorrect ? Number(SCORE_PER_QUIZ) : 0),
+      }));
+
+      setSubmittedQuizData((prev) => [
+        ...prev,
         {
           isCorrect,
           selectedOptions,
           ...currentQuiz,
         },
-      ];
+      ]);
 
-      const nextUserStats = {
-        timeTaken: userStats.timeTaken + duration,
-        score: userStats.score + (isCorrect ? Number(SCORE_PER_QUIZ) : 0),
-      };
+      if (currentQuizIndex === quizzes.length - 1) {
+        const nextSubmittedQuizData = [
+          ...submittedQuizData,
+          {
+            isCorrect,
+            selectedOptions,
+            ...currentQuiz,
+          },
+        ];
 
-      setUserAnalysisResultById(topic_id!, {
-        submittedQuizData: nextSubmittedQuizData,
-        userStats: nextUserStats,
-      });
+        const nextUserStats = {
+          timeTaken: userStats.timeTaken + duration,
+          score: userStats.score + (isCorrect ? Number(SCORE_PER_QUIZ) : 0),
+        };
 
-      navigate({
-        to: "/analysis/$topic_name/$topic_id",
-        params: {
-          topic_name: topic_name!,
-          topic_id: topic_id!,
-        },
-        search: { source },
-      });
-    } else {
-      setCurrentQuizIndex(currentQuizIndex + 1);
-      setSelectedOptions([]);
-      scrollToPosition(80);
+        setUserAnalysisResultById(topic_id!, {
+          submittedQuizData: nextSubmittedQuizData,
+          userStats: nextUserStats,
+        });
+
+        navigate({
+          to: "/analysis/$topic_name/$topic_id",
+          params: {
+            topic_name: topic_name!,
+            topic_id: topic_id!,
+          },
+          search: { source },
+        });
+      } else {
+        setCurrentQuizIndex(currentQuizIndex + 1);
+        setSelectedOptions([]);
+        scrollToPosition(80);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const onDragEnd = (result: DropResult) => {
+    if (isDisabled) return;
+
     const { source, destination } = result;
 
     if (!destination || destination.index === source.index) {
@@ -245,7 +260,7 @@ export default function QuizPage() {
                         key={option._id}
                         draggableId={option._id!}
                         index={index}
-                        isDragDisabled={timeLeft === 0}
+                        isDragDisabled={isDisabled}
                       >
                         {(provided, snapshot) => (
                           <div
@@ -258,7 +273,7 @@ export default function QuizPage() {
                               snapshot.isDragging &&
                                 "shadow-lg shadow-blue-500 ring-2 ring-blue-400",
                               timeLeft > 0 && "hover:shadow-blue-500",
-                              timeLeft === 0 && "cursor-not-allowed opacity-40"
+                              isDisabled && "cursor-not-allowed opacity-40"
                             )}
                           >
                             <p className={cn("w-full text-start")}>
@@ -281,7 +296,7 @@ export default function QuizPage() {
                   className={cn(
                     "w-full h-auto mb-6 whitespace-normal break-words bg-white hover:bg-white hover:text-black border border-white/50 shadow py-[14px] px-6 justify-start cursor-pointer data-[state=on]:text-white data-[state=on]:bg-green-500",
                     timeLeft > 0 && "hover:shadow-blue-500",
-                    timeLeft === 0 && "cursor-not-allowed opacity-40"
+                    isDisabled && "cursor-not-allowed opacity-40"
                   )}
                   pressed={
                     !currentQuiz?.isSortQuiz &&
@@ -294,6 +309,7 @@ export default function QuizPage() {
                       ? undefined
                       : () => toggleClick(option)
                   }
+                  disabled={isDisabled}
                 >
                   <p className={cn("w-full text-start")}>{option?.value}</p>
                 </Toggle>
@@ -306,10 +322,22 @@ export default function QuizPage() {
           <Button
             className="w-full py-5 px-8 cursor-pointer"
             onClick={handleNextQuiz}
+            disabled={isSubmitting}
           >
-            {currentQuizIndex < quizzes.length - 1 ? "Next Question" : "Finish"}
+            {isSubmitting ? (
+              <>
+                <SpinnerLoader className="text-white" />
+                Processing...
+              </>
+            ) : (
+              <>
+                {currentQuizIndex < quizzes.length - 1
+                  ? "Next Question"
+                  : "Finish"}
 
-            <ArrowRight className="h-4 w-4 ml-2" />
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </>
+            )}
           </Button>
         </div>
       </section>

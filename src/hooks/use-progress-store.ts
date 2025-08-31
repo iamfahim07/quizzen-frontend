@@ -2,7 +2,8 @@ import { create } from "zustand";
 
 interface ProgressStore {
   progress: number;
-  intervalId: NodeJS.Timeout | null;
+  intervalId: ReturnType<typeof setInterval> | null;
+  // intervalId: NodeJS.Timeout | null;
   startProgress: () => void;
   setProgress: (value: number) => void;
   resetProgress: () => void;

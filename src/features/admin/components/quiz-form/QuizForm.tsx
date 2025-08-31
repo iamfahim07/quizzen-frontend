@@ -2,11 +2,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { z } from "zod";
 
-import { useCreateQuizzes } from "@/api/admin/use-create-quizzes";
-import { useUpdateQuiz } from "@/api/admin/use-update-quiz";
 import { useGetTopics } from "@/api/use-get-topics";
+import { useCreateQuizzes } from "@/features/admin/api/use-create-quizzes";
+import { useUpdateQuiz } from "@/features/admin/api/use-update-quiz";
 
 import { SpinnerLoader } from "@/components/loader";
 import { Button } from "@/components/ui/button";
@@ -24,107 +23,20 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { cn } from "@/lib/utils";
 
-import type { QuestionType, Quiz, TopicResponse } from "@/types";
+import { quizFormSchema } from "@/features/admin/components/quiz-form/quiz-form.schemas";
+import type {
+  QuestionForm,
+  QuizFormData,
+  QuizFormProps,
+} from "@/features/admin/components/quiz-form/quiz-form.types";
+import type { QuestionType } from "@/types";
 
-interface QuizFormProps {
-  topic: TopicResponse | null;
-  editingQuiz?: Quiz | null;
-  onCancel: () => void;
-  setIsQuizDialogOpen: (open: boolean) => void;
-}
-
-interface QuestionForm {
-  readonly id?: string;
-  question: string;
-  options: string[];
-  correctAnswers: number[];
-  type: QuestionType;
-}
-
-const optionSchema = z.string().trim().min(1, "Option cannot be empty.");
-
-const questionSchema = z
-  .object({
-    id: z.string().trim().optional(),
-    question: z.string().trim().min(1, "Question is required."),
-    options: z.array(optionSchema).length(4, "Must have exactly 4 options."),
-    correctAnswers: z.array(z.number()),
-    type: z.enum(["multiple-choice", "sortable"]),
-  })
-  .refine(
-    (data) => {
-      if (data.type === "multiple-choice") {
-        return data.correctAnswers.length > 0;
-      }
-      return true;
-    },
-    {
-      message:
-        "Multiple-choice questions must have at least one correct answer selected.",
-      path: ["correctAnswers"],
-    }
-  );
-
-const quizFormSchema = z
-  .object({
-    topicId: z.string().trim().min(1, "Please select a topic."),
-    quizValidationSummary: z.string().optional(),
-    quizzes: z
-      .array(questionSchema)
-      .min(1, "At least one question is required."),
-  })
-  .superRefine(({ quizzes }, ctx) => {
-    const errorIndices: number[] = [];
-
-    quizzes.forEach((quiz, index) => {
-      let hasError = false;
-
-      if (!quiz.question || quiz.question.trim().length === 0) {
-        hasError = true;
-      }
-
-      if (
-        !quiz.options ||
-        quiz.options.length !== 4 ||
-        quiz.options.some((opt) => !opt || opt.trim().length === 0)
-      ) {
-        hasError = true;
-      }
-
-      if (
-        quiz.type === "multiple-choice" &&
-        (!quiz.correctAnswers || quiz.correctAnswers.length === 0)
-      ) {
-        hasError = true;
-      }
-
-      if (hasError) {
-        errorIndices.push(index + 1);
-      }
-    });
-
-    if (errorIndices.length > 0) {
-      const message =
-        errorIndices.length === 1
-          ? `Question ${errorIndices[0]} has blank fields.`
-          : `Questions ${errorIndices.join(", ")} have blank fields.`;
-
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message,
-        path: ["quizValidationSummary"],
-      });
-    }
-  });
-
-export type QuizFormData = z.infer<typeof quizFormSchema>;
-
-export default function QuizForm({
+export const QuizForm = ({
   topic,
   editingQuiz,
   onCancel,
   setIsQuizDialogOpen,
-}: QuizFormProps) {
+}: QuizFormProps) => {
   const editQuiz = editingQuiz
     ? {
         id: editingQuiz?._id,
@@ -396,8 +308,11 @@ export default function QuizForm({
                       : "Answer Options"}
                   </Label>
                   {watchedQuizzes[quizIndex].options.map((_, optionIndex) => (
-                    <div key={optionIndex}>
-                      <div className="flex items-center space-x-2">
+                    <>
+                      <div
+                        key={optionIndex}
+                        className="flex items-center space-x-2"
+                      >
                         <Controller
                           control={form.control}
                           name={`quizzes.${quizIndex}.options.${optionIndex}`}
@@ -504,7 +419,7 @@ export default function QuizForm({
                           }
                         </p>
                       )}
-                    </div>
+                    </>
                   ))}
                 </div>
               </div>
@@ -568,4 +483,4 @@ export default function QuizForm({
       </div>
     </form>
   );
-}
+};
