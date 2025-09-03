@@ -11,6 +11,7 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as MultiplayerImport } from './routes/multiplayer'
 import { Route as AuthImport } from './routes/auth'
 import { Route as AdminDashboardImport } from './routes/admin-dashboard'
 import { Route as IndexImport } from './routes/index'
@@ -22,6 +23,12 @@ import { Route as QuizTopicnameTopicidImport } from './routes/quiz/$topic_name/$
 import { Route as AnalysisTopicnameTopicidImport } from './routes/analysis/$topic_name/$topic_id'
 
 // Create/Update Routes
+
+const MultiplayerRoute = MultiplayerImport.update({
+  id: '/multiplayer',
+  path: '/multiplayer',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const AuthRoute = AuthImport.update({
   id: '/auth',
@@ -100,6 +107,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthImport
+      parentRoute: typeof rootRoute
+    }
+    '/multiplayer': {
+      id: '/multiplayer'
+      path: '/multiplayer'
+      fullPath: '/multiplayer'
+      preLoaderRoute: typeof MultiplayerImport
       parentRoute: typeof rootRoute
     }
     '/analysis/$topic_name': {
@@ -188,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin-dashboard': typeof AdminDashboardRoute
   '/auth': typeof AuthRoute
+  '/multiplayer': typeof MultiplayerRoute
   '/analysis/$topic_name': typeof AnalysisTopicnameRouteWithChildren
   '/quiz/$topic_name': typeof QuizTopicnameRouteWithChildren
   '/rules/$topic_name': typeof RulesTopicnameRouteWithChildren
@@ -200,6 +215,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin-dashboard': typeof AdminDashboardRoute
   '/auth': typeof AuthRoute
+  '/multiplayer': typeof MultiplayerRoute
   '/analysis/$topic_name': typeof AnalysisTopicnameRouteWithChildren
   '/quiz/$topic_name': typeof QuizTopicnameRouteWithChildren
   '/rules/$topic_name': typeof RulesTopicnameRouteWithChildren
@@ -213,6 +229,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin-dashboard': typeof AdminDashboardRoute
   '/auth': typeof AuthRoute
+  '/multiplayer': typeof MultiplayerRoute
   '/analysis/$topic_name': typeof AnalysisTopicnameRouteWithChildren
   '/quiz/$topic_name': typeof QuizTopicnameRouteWithChildren
   '/rules/$topic_name': typeof RulesTopicnameRouteWithChildren
@@ -227,6 +244,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin-dashboard'
     | '/auth'
+    | '/multiplayer'
     | '/analysis/$topic_name'
     | '/quiz/$topic_name'
     | '/rules/$topic_name'
@@ -238,6 +256,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin-dashboard'
     | '/auth'
+    | '/multiplayer'
     | '/analysis/$topic_name'
     | '/quiz/$topic_name'
     | '/rules/$topic_name'
@@ -249,6 +268,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin-dashboard'
     | '/auth'
+    | '/multiplayer'
     | '/analysis/$topic_name'
     | '/quiz/$topic_name'
     | '/rules/$topic_name'
@@ -262,6 +282,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
   AuthRoute: typeof AuthRoute
+  MultiplayerRoute: typeof MultiplayerRoute
   AnalysisTopicnameRoute: typeof AnalysisTopicnameRouteWithChildren
   QuizTopicnameRoute: typeof QuizTopicnameRouteWithChildren
   RulesTopicnameRoute: typeof RulesTopicnameRouteWithChildren
@@ -271,6 +292,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminDashboardRoute: AdminDashboardRoute,
   AuthRoute: AuthRoute,
+  MultiplayerRoute: MultiplayerRoute,
   AnalysisTopicnameRoute: AnalysisTopicnameRouteWithChildren,
   QuizTopicnameRoute: QuizTopicnameRouteWithChildren,
   RulesTopicnameRoute: RulesTopicnameRouteWithChildren,
@@ -289,6 +311,7 @@ export const routeTree = rootRoute
         "/",
         "/admin-dashboard",
         "/auth",
+        "/multiplayer",
         "/analysis/$topic_name",
         "/quiz/$topic_name",
         "/rules/$topic_name"
@@ -302,6 +325,9 @@ export const routeTree = rootRoute
     },
     "/auth": {
       "filePath": "auth.tsx"
+    },
+    "/multiplayer": {
+      "filePath": "multiplayer.tsx"
     },
     "/analysis/$topic_name": {
       "filePath": "analysis/$topic_name.tsx",

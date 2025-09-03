@@ -10,6 +10,8 @@ import PromptInput from "@/components/prompt-input";
 import { TopicsCardSkeletonLoader } from "@/components/skeleton-loaders";
 import TopicCard from "@/components/topic-card";
 
+import { MultiplayerStartButton } from "@/features/multiplayer/components/multiplayer-start-button";
+
 import { useAiQuizStore } from "@/hooks/use-ai-quiz-store";
 import { useAuthStore } from "@/hooks/use-auth-store";
 
@@ -62,6 +64,10 @@ export default function HomePage() {
           </div>
 
           <PromptInput />
+        </section>
+
+        <section className="max-w-7xl mx-auto mb-10">
+          <MultiplayerStartButton />
         </section>
 
         <section className="max-w-7xl mx-auto mb-10">
